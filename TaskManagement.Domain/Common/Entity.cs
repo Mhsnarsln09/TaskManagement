@@ -2,6 +2,10 @@ namespace TaskManagement.Domain.Common;
 
 public abstract class Entity
 {
+    protected Entity()
+    {
+    }
+
     protected Entity(Guid id)
     {
         if (id == Guid.Empty)
@@ -13,9 +17,9 @@ public abstract class Entity
         CreatedAtUtc = DateTimeOffset.UtcNow;
     }
 
-    public Guid Id { get; }
+    public Guid Id { get; private set; }
 
-    public DateTimeOffset CreatedAtUtc { get; }
+    public DateTimeOffset CreatedAtUtc { get; private set; }
 
     public DateTimeOffset? UpdatedAtUtc { get; private set; }
 
