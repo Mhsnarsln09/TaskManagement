@@ -1,0 +1,55 @@
+# .NET build çıktıları
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+
+# Test ve code coverage çıktıları
+[Tt]est[Rr]esult*/
+coverage/
+*.coverage
+*.coveragexml
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# JetBrains Rider / ReSharper
+.idea/
+*.sln.iml
+_ReSharper*/
+*.DotSettings.user
+
+# VS Code kullanıcıya özel ayarları
+.vscode/
+
+# NuGet çıktıları
+*.nupkg
+*.snupkg
+packages/
+!**/packages/build/
+
+# İşletim sistemi dosyaları
+.DS_Store
+Thumbs.db
+
+# Log ve geçici dosyalar
+logs/
+*.log
+*.tmp
+*.temp
+
+# Yerel ortam ve secret dosyaları
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.local.json
+
+# Uygulamanın geliştirme ortamında üreteceği dosyalar
+uploads/
+
+docs/
+
