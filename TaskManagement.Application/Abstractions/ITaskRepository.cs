@@ -10,11 +10,18 @@ public interface ITaskRepository
     Task<PagedResponse<TaskResponse>> ListAsync(
         Guid projectId,
         TaskListQuery query,
+        DateOnly today,
         CancellationToken cancellationToken);
 
     Task<TaskResponse?> GetResponseAsync(
         Guid projectId,
         Guid taskId,
+        DateOnly today,
+        CancellationToken cancellationToken);
+
+    Task<bool> HasOpenTasksAssignedToUserAsync(
+        Guid projectId,
+        Guid userId,
         CancellationToken cancellationToken);
 
     Task<TaskItem?> GetEntityAsync(

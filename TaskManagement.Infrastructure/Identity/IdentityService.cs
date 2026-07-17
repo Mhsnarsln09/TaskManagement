@@ -44,6 +44,11 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager) : 
         return await MapAsync(user);
     }
 
+    public async Task<bool> UserExistsAsync(Guid userId)
+    {
+        return await userManager.FindByIdAsync(userId.ToString()) is not null;
+    }
+
     private async Task<UserResponse> MapAsync(ApplicationUser user)
     {
         IList<string> roles = await userManager.GetRolesAsync(user);

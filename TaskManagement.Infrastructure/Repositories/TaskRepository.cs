@@ -16,6 +16,7 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
     public async Task<PagedResponse<TaskResponse>> ListAsync(
         Guid projectId,
         TaskListQuery query,
+        DateOnly today,
         CancellationToken cancellationToken)
     {
         IQueryable<TaskItem> tasks = dbContext.TaskItems
@@ -48,6 +49,10 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
                 task.Priority,
                 task.DueDate,
                 task.AssigneeUserId,
+                task.DueDate != null
+                    && task.DueDate < today
+                    && task.Status != WorkItemStatus.Completed
+                    && task.Status != WorkItemStatus.Cancelled,
                 task.CreatedAtUtc,
                 task.UpdatedAtUtc))
             .ToListAsync(cancellationToken);
@@ -58,6 +63,7 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
     public async Task<TaskResponse?> GetResponseAsync(
         Guid projectId,
         Guid taskId,
+        DateOnly today,
         CancellationToken cancellationToken)
     {
         return await dbContext.TaskItems
@@ -72,9 +78,28 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
                 task.Priority,
                 task.DueDate,
                 task.AssigneeUserId,
+                task.DueDate != null
+                    && task.DueDate < today
+                    && task.Status != WorkItemStatus.Completed
+                    && task.Status != WorkItemStatus.Cancelled,
                 task.CreatedAtUtc,
                 task.UpdatedAtUtc))
             .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<bool> HasOpenTasksAssignedToUserAsync(
+        Guid projectId,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        return dbContext.TaskItems
+            .AsNoTracking()
+            .AnyAsync(
+                task => task.ProjectId == projectId
+                    && task.AssigneeUserId == userId
+                    && task.Status != WorkItemStatus.Completed
+                    && task.Status != WorkItemStatus.Cancelled,
+                cancellationToken);
     }
 
     public async Task<TaskItem?> GetEntityAsync(

@@ -1,4 +1,5 @@
 using TaskManagement.Application.Abstractions;
+using TaskManagement.Application.Authorization;
 using TaskManagement.Application.Contracts;
 using TaskManagement.Application.Errors;
 using TaskManagement.Domain.Projects;
@@ -7,12 +8,16 @@ namespace TaskManagement.Application.Projects;
 
 public sealed class ProjectService(
     IProjectRepository projectRepository,
+    ITaskRepository taskRepository,
+    IIdentityService identityService,
+    ProjectAuthorizationService projectAuthorization,
     ICurrentUser currentUser)
 {
     public async Task<ProjectResponse> CreateAsync(
         CreateProjectRequest request,
         CancellationToken cancellationToken)
     {
+        // Project.Create seeds the owner as the first ProjectMember.
         Project project = Project.Create(Guid.NewGuid(), request.Name, request.Description, currentUser.UserId);
         await projectRepository.AddAsync(project, cancellationToken);
         await projectRepository.SaveChangesAsync(cancellationToken);
@@ -27,18 +32,10 @@ public sealed class ProjectService(
 
     public async Task<ProjectResponse> GetAsync(Guid id, CancellationToken cancellationToken)
     {
+        await projectAuthorization.EnsureMemberAsync(id, cancellationToken);
+
         ProjectResponse? project = await projectRepository.GetResponseAsync(id, cancellationToken);
-        if (project is null)
-        {
-            throw new NotFoundException("Project was not found.");
-        }
-
-        if (!await projectRepository.IsMemberAsync(id, currentUser.UserId, cancellationToken))
-        {
-            throw new ForbiddenException("You do not have access to this project.");
-        }
-
-        return project;
+        return project ?? throw new NotFoundException("Project was not found.");
     }
 
     public async Task<ProjectResponse> UpdateAsync(
@@ -46,7 +43,8 @@ public sealed class ProjectService(
         UpdateProjectRequest request,
         CancellationToken cancellationToken)
     {
-        Project project = await GetOwnedProjectEntityAsync(id, cancellationToken);
+        await projectAuthorization.EnsureCanManageAsync(id, cancellationToken);
+        Project project = await GetProjectEntityAsync(id, cancellationToken);
 
         project.Rename(request.Name);
         project.ChangeDescription(request.Description);
@@ -57,29 +55,77 @@ public sealed class ProjectService(
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        Project project = await GetOwnedProjectEntityAsync(id, cancellationToken);
+        await projectAuthorization.EnsureCanManageAsync(id, cancellationToken);
+        Project project = await GetProjectEntityAsync(id, cancellationToken);
+
         projectRepository.Remove(project);
         await projectRepository.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<Project> GetOwnedProjectEntityAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<ProjectMemberResponse>> ListMembersAsync(
+        Guid id,
+        CancellationToken cancellationToken)
     {
-        Project? project = await projectRepository.GetEntityAsync(id, cancellationToken);
-        if (project is null)
-        {
-            throw new NotFoundException("Project was not found.");
-        }
-
-        EnsureProjectOwner(project.OwnerUserId);
-        return project;
+        await projectAuthorization.EnsureMemberAsync(id, cancellationToken);
+        return await projectRepository.ListMembersAsync(id, cancellationToken);
     }
 
-    private void EnsureProjectOwner(Guid ownerUserId)
+    public async Task<ProjectMemberResponse> AddMemberAsync(
+        Guid id,
+        AddProjectMemberRequest request,
+        CancellationToken cancellationToken)
     {
-        if (ownerUserId != currentUser.UserId)
+        await projectAuthorization.EnsureCanManageAsync(id, cancellationToken);
+
+        if (!await identityService.UserExistsAsync(request.UserId))
         {
-            throw new ForbiddenException("Only the project owner can modify this project.");
+            throw new ValidationProblemException(new Dictionary<string, string[]>
+            {
+                ["userId"] = ["User does not exist."]
+            });
         }
+
+        Project project = await GetProjectWithMembersAsync(id, cancellationToken);
+
+        // Duplicate membership is rejected here as a business rule; the unique
+        // (ProjectId, UserId) index is the database-level backstop.
+        project.AddMember(request.UserId);
+        await projectRepository.SaveChangesAsync(cancellationToken);
+
+        ProjectMember member = project.Members.Single(member => member.UserId == request.UserId);
+        return new ProjectMemberResponse(member.UserId, member.JoinedAtUtc);
+    }
+
+    public async Task RemoveMemberAsync(Guid id, Guid userId, CancellationToken cancellationToken)
+    {
+        await projectAuthorization.EnsureCanManageAsync(id, cancellationToken);
+
+        Project project = await GetProjectWithMembersAsync(id, cancellationToken);
+        if (project.Members.All(member => member.UserId != userId))
+        {
+            throw new NotFoundException("Project member was not found.");
+        }
+
+        if (await taskRepository.HasOpenTasksAssignedToUserAsync(id, userId, cancellationToken))
+        {
+            throw new ConflictException(
+                "User has open tasks assigned in this project. Reassign them before removing the member.");
+        }
+
+        project.RemoveMember(userId);
+        await projectRepository.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<Project> GetProjectEntityAsync(Guid id, CancellationToken cancellationToken)
+    {
+        Project? project = await projectRepository.GetEntityAsync(id, cancellationToken);
+        return project ?? throw new NotFoundException("Project was not found.");
+    }
+
+    private async Task<Project> GetProjectWithMembersAsync(Guid id, CancellationToken cancellationToken)
+    {
+        Project? project = await projectRepository.GetEntityWithMembersAsync(id, cancellationToken);
+        return project ?? throw new NotFoundException("Project was not found.");
     }
 
     private static ProjectResponse Map(Project project)

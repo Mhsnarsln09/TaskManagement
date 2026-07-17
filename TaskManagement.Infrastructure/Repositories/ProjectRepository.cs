@@ -63,9 +63,38 @@ public sealed class ProjectRepository(ApplicationDbContext dbContext) : IProject
             .SingleOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<Guid?> GetOwnerIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await dbContext.Projects
+            .AsNoTracking()
+            .Where(project => project.Id == id)
+            .Select(project => (Guid?)project.OwnerUserId)
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<Project?> GetEntityAsync(Guid id, CancellationToken cancellationToken)
     {
         return await dbContext.Projects.SingleOrDefaultAsync(project => project.Id == id, cancellationToken);
+    }
+
+    public async Task<Project?> GetEntityWithMembersAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await dbContext.Projects
+            .Include(project => project.Members)
+            .SingleOrDefaultAsync(project => project.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<ProjectMemberResponse>> ListMembersAsync(
+        Guid projectId,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.ProjectMembers
+            .AsNoTracking()
+            .Where(member => member.ProjectId == projectId)
+            .OrderBy(member => member.JoinedAtUtc)
+            .ThenBy(member => member.Id)
+            .Select(member => new ProjectMemberResponse(member.UserId, member.JoinedAtUtc))
+            .ToListAsync(cancellationToken);
     }
 
     public void Remove(Project project)

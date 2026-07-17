@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using TaskManagement.Application.Errors;
 using TaskManagement.Domain.Common;
 
@@ -22,6 +23,10 @@ public sealed class GlobalExceptionHandler(
             ApplicationExceptionBase handledApplicationException => handledApplicationException.StatusCode,
             DomainException => StatusCodes.Status409Conflict,
             DbUpdateConcurrencyException => StatusCodes.Status409Conflict,
+            // Race conditions can slip past application-level duplicate checks; the
+            // database unique constraint is the backstop and must surface as 409.
+            DbUpdateException dbUpdateException when IsUniqueConstraintViolation(dbUpdateException) =>
+                StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
 
@@ -47,6 +52,8 @@ public sealed class GlobalExceptionHandler(
             // Unexpected exceptions must not leak internal details to clients.
             _ when statusCode == StatusCodes.Status500InternalServerError =>
                 "An unexpected error occurred.",
+            DbUpdateException =>
+                "The change conflicts with data that already exists.",
             _ => exception.Message
         };
         problem.Instance = httpContext.Request.Path;
@@ -57,5 +64,19 @@ public sealed class GlobalExceptionHandler(
             ProblemDetails = problem,
             Exception = exception
         });
+    }
+
+    private static bool IsUniqueConstraintViolation(DbUpdateException exception)
+    {
+        return exception.InnerException switch
+        {
+            PostgresException postgresException =>
+                postgresException.SqlState == PostgresErrorCodes.UniqueViolation,
+            // The Sqlite provider (integration tests) is not referenced by the Api
+            // project, so its unique violation is detected by message.
+            { } innerException =>
+                innerException.Message.Contains("UNIQUE constraint failed", StringComparison.Ordinal),
+            null => false
+        };
     }
 }

@@ -28,3 +28,12 @@ public sealed class UpdateProjectRequestValidator : AbstractValidator<UpdateProj
             .MaximumLength(2_000);
     }
 }
+
+public sealed class AddProjectMemberRequestValidator : AbstractValidator<AddProjectMemberRequest>
+{
+    public AddProjectMemberRequestValidator()
+    {
+        RuleFor(request => request.UserId)
+            .NotEmpty();
+    }
+}

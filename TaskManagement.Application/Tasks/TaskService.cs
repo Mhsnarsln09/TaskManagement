@@ -1,4 +1,5 @@
 using TaskManagement.Application.Abstractions;
+using TaskManagement.Application.Authorization;
 using TaskManagement.Application.Contracts;
 using TaskManagement.Application.Errors;
 using TaskManagement.Domain.Tasks;
@@ -8,14 +9,15 @@ namespace TaskManagement.Application.Tasks;
 public sealed class TaskService(
     IProjectRepository projectRepository,
     ITaskRepository taskRepository,
-    ICurrentUser currentUser)
+    ProjectAuthorizationService projectAuthorization,
+    TimeProvider timeProvider)
 {
     public async Task<TaskResponse> CreateAsync(
         Guid projectId,
         CreateTaskRequest request,
         CancellationToken cancellationToken)
     {
-        await EnsureProjectAccessAsync(projectId, cancellationToken);
+        await projectAuthorization.EnsureMemberAsync(projectId, cancellationToken);
         await EnsureAssigneeIsMemberAsync(projectId, request.AssigneeUserId, cancellationToken);
 
         var task = new TaskItem(
@@ -38,15 +40,15 @@ public sealed class TaskService(
         TaskListQuery query,
         CancellationToken cancellationToken)
     {
-        await EnsureProjectAccessAsync(projectId, cancellationToken);
-        return await taskRepository.ListAsync(projectId, query, cancellationToken);
+        await projectAuthorization.EnsureMemberAsync(projectId, cancellationToken);
+        return await taskRepository.ListAsync(projectId, query, Today(), cancellationToken);
     }
 
     public async Task<TaskResponse> GetAsync(Guid projectId, Guid taskId, CancellationToken cancellationToken)
     {
-        await EnsureProjectAccessAsync(projectId, cancellationToken);
+        await projectAuthorization.EnsureMemberAsync(projectId, cancellationToken);
 
-        TaskResponse? task = await taskRepository.GetResponseAsync(projectId, taskId, cancellationToken);
+        TaskResponse? task = await taskRepository.GetResponseAsync(projectId, taskId, Today(), cancellationToken);
         return task ?? throw new NotFoundException("Task was not found.");
     }
 
@@ -56,10 +58,18 @@ public sealed class TaskService(
         UpdateTaskRequest request,
         CancellationToken cancellationToken)
     {
-        await EnsureProjectAccessAsync(projectId, cancellationToken);
+        await projectAuthorization.EnsureMemberAsync(projectId, cancellationToken);
         await EnsureAssigneeIsMemberAsync(projectId, request.AssigneeUserId, cancellationToken);
 
         TaskItem task = await GetTaskEntityAsync(projectId, taskId, cancellationToken);
+
+        // Reopen policy: a completed task can only be changed after it is explicitly
+        // reopened by requesting the InProgress status. Any other edit attempt on a
+        // completed task is rejected by the domain with a conflict.
+        if (task.Status == WorkItemStatus.Completed && request.Status == WorkItemStatus.InProgress)
+        {
+            task.Reopen();
+        }
 
         task.Rename(request.Title);
         task.ChangeDescription(request.Description);
@@ -74,24 +84,12 @@ public sealed class TaskService(
 
     public async Task DeleteAsync(Guid projectId, Guid taskId, CancellationToken cancellationToken)
     {
-        await EnsureProjectAccessAsync(projectId, cancellationToken);
+        // Only a ProjectManager owning the project or an Admin may delete tasks.
+        await projectAuthorization.EnsureCanDeleteTasksAsync(projectId, cancellationToken);
 
         TaskItem task = await GetTaskEntityAsync(projectId, taskId, cancellationToken);
         taskRepository.Remove(task);
         await taskRepository.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task EnsureProjectAccessAsync(Guid projectId, CancellationToken cancellationToken)
-    {
-        if (!await projectRepository.ExistsAsync(projectId, cancellationToken))
-        {
-            throw new NotFoundException("Project was not found.");
-        }
-
-        if (!await projectRepository.IsMemberAsync(projectId, currentUser.UserId, cancellationToken))
-        {
-            throw new ForbiddenException("You do not have access to this project.");
-        }
     }
 
     private async Task EnsureAssigneeIsMemberAsync(
@@ -122,6 +120,10 @@ public sealed class TaskService(
         return task ?? throw new NotFoundException("Task was not found.");
     }
 
+    // Allowed transitions (see docs/TECHNICAL-DECISIONS.md):
+    // Todo -> InProgress | Cancelled, InProgress -> Completed | Cancelled,
+    // Completed -> InProgress (reopen, handled in UpdateAsync). Cancelled is terminal.
+    // Todo -> Completed is accepted as a convenience and runs Start + Complete.
     private static void ApplyStatus(TaskItem task, WorkItemStatus status)
     {
         if (task.Status == status)
@@ -152,7 +154,12 @@ public sealed class TaskService(
         }
     }
 
-    private static TaskResponse Map(TaskItem task)
+    private DateOnly Today()
+    {
+        return DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+    }
+
+    private TaskResponse Map(TaskItem task)
     {
         return new TaskResponse(
             task.Id,
@@ -163,6 +170,7 @@ public sealed class TaskService(
             task.Priority,
             task.DueDate,
             task.AssigneeUserId,
+            task.IsOverdue(Today()),
             task.CreatedAtUtc,
             task.UpdatedAtUtc);
     }

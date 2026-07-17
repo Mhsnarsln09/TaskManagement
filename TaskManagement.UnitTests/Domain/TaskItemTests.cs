@@ -49,6 +49,83 @@ public sealed class TaskItemTests
     }
 
     [Fact]
+    public void Start_RejectsInProgressTask()
+    {
+        TaskItem task = CreateTask();
+        task.Start();
+
+        Assert.Throws<DomainException>(task.Start);
+    }
+
+    [Fact]
+    public void Cancel_AllowsTodoAndInProgressTasks()
+    {
+        TaskItem todoTask = CreateTask();
+        todoTask.Cancel();
+        Assert.Equal(WorkItemStatus.Cancelled, todoTask.Status);
+
+        TaskItem inProgressTask = CreateTask();
+        inProgressTask.Start();
+        inProgressTask.Cancel();
+        Assert.Equal(WorkItemStatus.Cancelled, inProgressTask.Status);
+    }
+
+    [Fact]
+    public void Cancel_RejectsCompletedTask()
+    {
+        TaskItem task = CreateTask();
+        task.Start();
+        task.Complete();
+
+        Assert.Throws<DomainException>(task.Cancel);
+    }
+
+    [Fact]
+    public void Reopen_MovesCompletedTaskBackToInProgress()
+    {
+        TaskItem task = CreateTask();
+        task.Start();
+        task.Complete();
+
+        task.Reopen();
+
+        Assert.Equal(WorkItemStatus.InProgress, task.Status);
+    }
+
+    [Fact]
+    public void Reopen_AllowsEditingAgain()
+    {
+        TaskItem task = CreateTask();
+        task.Start();
+        task.Complete();
+        task.Reopen();
+
+        task.Rename("New title");
+
+        Assert.Equal("New title", task.Title);
+    }
+
+    [Fact]
+    public void Reopen_RejectsTaskThatIsNotCompleted()
+    {
+        TaskItem todoTask = CreateTask();
+        Assert.Throws<DomainException>(todoTask.Reopen);
+
+        TaskItem cancelledTask = CreateTask();
+        cancelledTask.Cancel();
+        Assert.Throws<DomainException>(cancelledTask.Reopen);
+    }
+
+    [Fact]
+    public void Rename_RejectsCancelledTask()
+    {
+        TaskItem task = CreateTask();
+        task.Cancel();
+
+        Assert.Throws<DomainException>(() => task.Rename("New title"));
+    }
+
+    [Fact]
     public void IsOverdue_ReturnsTrue_WhenDueDateIsPastAndTaskIsOpen()
     {
         TaskItem task = new(

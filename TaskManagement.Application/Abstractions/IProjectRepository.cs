@@ -15,9 +15,17 @@ public interface IProjectRepository
 
     Task<bool> IsMemberAsync(Guid projectId, Guid userId, CancellationToken cancellationToken);
 
+    Task<Guid?> GetOwnerIdAsync(Guid id, CancellationToken cancellationToken);
+
     Task<ProjectResponse?> GetResponseAsync(Guid id, CancellationToken cancellationToken);
 
     Task<Project?> GetEntityAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<Project?> GetEntityWithMembersAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<IReadOnlyCollection<ProjectMemberResponse>> ListMembersAsync(
+        Guid projectId,
+        CancellationToken cancellationToken);
 
     void Remove(Project project);
 

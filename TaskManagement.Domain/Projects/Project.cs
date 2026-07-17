@@ -67,10 +67,27 @@ public sealed class Project : Entity
 
         if (_members.Any(member => member.UserId == userId))
         {
-            return;
+            throw new DomainException("User is already a member of this project.");
         }
 
         _members.Add(new ProjectMember(Guid.NewGuid(), Id, userId));
+        MarkUpdated();
+    }
+
+    public void RemoveMember(Guid userId)
+    {
+        if (userId == OwnerUserId)
+        {
+            throw new DomainException("The project owner cannot be removed from the project.");
+        }
+
+        ProjectMember? member = _members.SingleOrDefault(member => member.UserId == userId);
+        if (member is null)
+        {
+            throw new DomainException("User is not a member of this project.");
+        }
+
+        _members.Remove(member);
         MarkUpdated();
     }
 }

@@ -34,5 +34,6 @@ public sealed record TaskResponse(
     TaskPriority Priority,
     DateOnly? DueDate,
     Guid? AssigneeUserId,
+    bool IsOverdue,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? UpdatedAtUtc);

@@ -63,4 +63,45 @@ public sealed class ProjectsController(ProjectService projectService) : Controll
         await projectService.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
+
+    [HttpGet("{id:guid}/members")]
+    [ProducesResponseType<IReadOnlyCollection<ProjectMemberResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IReadOnlyCollection<ProjectMemberResponse>>> ListMembers(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        IReadOnlyCollection<ProjectMemberResponse> members =
+            await projectService.ListMembersAsync(id, cancellationToken);
+        return Ok(members);
+    }
+
+    [HttpPost("{id:guid}/members")]
+    [ProducesResponseType<ProjectMemberResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<ProjectMemberResponse>> AddMember(
+        Guid id,
+        AddProjectMemberRequest request,
+        CancellationToken cancellationToken)
+    {
+        ProjectMemberResponse member = await projectService.AddMemberAsync(id, request, cancellationToken);
+        return CreatedAtAction(nameof(ListMembers), new { id }, member);
+    }
+
+    [HttpDelete("{id:guid}/members/{userId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> RemoveMember(
+        Guid id,
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        await projectService.RemoveMemberAsync(id, userId, cancellationToken);
+        return NoContent();
+    }
 }

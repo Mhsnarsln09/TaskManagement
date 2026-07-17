@@ -19,4 +19,9 @@ public sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICur
             throw new UnauthorizedException("Authenticated user id claim is missing or invalid.");
         }
     }
+
+    public bool IsInRole(string role)
+    {
+        return httpContextAccessor.HttpContext?.User.IsInRole(role) ?? false;
+    }
 }

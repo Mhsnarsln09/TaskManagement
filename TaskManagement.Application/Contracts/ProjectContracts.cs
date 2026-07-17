@@ -11,3 +11,9 @@ public sealed record ProjectResponse(
     Guid OwnerUserId,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? UpdatedAtUtc);
+
+public sealed record AddProjectMemberRequest(Guid UserId);
+
+public sealed record ProjectMemberResponse(
+    Guid UserId,
+    DateTimeOffset JoinedAtUtc);

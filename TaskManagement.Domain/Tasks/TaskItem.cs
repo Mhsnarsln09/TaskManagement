@@ -89,6 +89,17 @@ public sealed class TaskItem : Entity
         MarkUpdated();
     }
 
+    public void Reopen()
+    {
+        if (Status != WorkItemStatus.Completed)
+        {
+            throw new DomainException("Only completed tasks can be reopened.");
+        }
+
+        Status = WorkItemStatus.InProgress;
+        MarkUpdated();
+    }
+
     public void Rename(string title)
     {
         EnsureCanChange();
