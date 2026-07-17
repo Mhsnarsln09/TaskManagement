@@ -8,13 +8,10 @@ namespace TaskManagement.Api.Services;
 
 public sealed class ProjectService(
     ApplicationDbContext dbContext,
-    ICurrentUser currentUser,
-    DevelopmentUserInitializer userInitializer)
+    ICurrentUser currentUser)
 {
     public async Task<ProjectResponse> CreateAsync(CreateProjectRequest request, CancellationToken cancellationToken)
     {
-        await userInitializer.EnsureCurrentUserExistsAsync(cancellationToken);
-
         var project = new Project(Guid.NewGuid(), request.Name, request.Description, currentUser.UserId);
         dbContext.Projects.Add(project);
         await dbContext.SaveChangesAsync(cancellationToken);

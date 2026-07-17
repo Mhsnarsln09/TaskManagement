@@ -2,6 +2,12 @@
 [Bb]in/
 [Oo]bj/
 [Aa]rtifacts/
+**/[Bb]in\\*/
+**/[Oo]bj\\*/
+*.dll
+*.pdb
+*.deps.json
+*.runtimeconfig.json
 
 # Test ve code coverage çıktıları
 [Tt]est[Rr]esult*/
@@ -52,4 +58,3 @@ appsettings.*.local.json
 uploads/
 
 docs/
-

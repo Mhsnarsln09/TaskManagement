@@ -29,15 +29,16 @@ public sealed class GlobalExceptionHandler(
 
         httpContext.Response.StatusCode = statusCode;
 
-        var problem = new ProblemDetails
-        {
-            Status = statusCode,
-            Title = exception is ApiException apiException
-                ? apiException.Title
-                : ReasonPhrases.GetReasonPhrase(statusCode),
-            Detail = exception.Message,
-            Instance = httpContext.Request.Path
-        };
+        ProblemDetails problem = exception is ValidationProblemException validationProblemException
+            ? new HttpValidationProblemDetails(validationProblemException.Errors)
+            : new ProblemDetails();
+
+        problem.Status = statusCode;
+        problem.Title = exception is ApiException apiException
+            ? apiException.Title
+            : ReasonPhrases.GetReasonPhrase(statusCode);
+        problem.Detail = exception.Message;
+        problem.Instance = httpContext.Request.Path;
 
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {

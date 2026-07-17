@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagement.Api.Contracts;
 using TaskManagement.Api.Services;
@@ -5,6 +6,7 @@ using TaskManagement.Api.Services;
 namespace TaskManagement.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/projects/{projectId:guid}/tasks")]
 [Produces("application/json")]
 public sealed class TasksController(TaskService taskService) : ControllerBase
