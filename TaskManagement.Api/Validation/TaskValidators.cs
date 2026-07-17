@@ -1,0 +1,95 @@
+using FluentValidation;
+using TaskManagement.Api.Contracts;
+using TaskManagement.Domain.Tasks;
+
+namespace TaskManagement.Api.Validation;
+
+public sealed class CreateTaskRequestValidator : AbstractValidator<CreateTaskRequest>
+{
+    public CreateTaskRequestValidator()
+    {
+        RuleFor(request => request.Title)
+            .NotEmpty()
+            .MaximumLength(200);
+
+        RuleFor(request => request.Description)
+            .MaximumLength(4_000);
+
+        RuleFor(request => request.Priority)
+            .IsInEnum();
+
+        RuleFor(request => request.DueDate)
+            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.Date))
+            .When(request => request.DueDate is not null);
+
+        RuleFor(request => request.AssigneeUserId)
+            .NotEqual(Guid.Empty)
+            .When(request => request.AssigneeUserId is not null);
+    }
+}
+
+public sealed class UpdateTaskRequestValidator : AbstractValidator<UpdateTaskRequest>
+{
+    public UpdateTaskRequestValidator()
+    {
+        RuleFor(request => request.Title)
+            .NotEmpty()
+            .MaximumLength(200);
+
+        RuleFor(request => request.Description)
+            .MaximumLength(4_000);
+
+        RuleFor(request => request.Status)
+            .IsInEnum();
+
+        RuleFor(request => request.Priority)
+            .IsInEnum();
+
+        RuleFor(request => request.DueDate)
+            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.Date))
+            .When(request => request.DueDate is not null);
+
+        RuleFor(request => request.AssigneeUserId)
+            .NotEqual(Guid.Empty)
+            .When(request => request.AssigneeUserId is not null);
+    }
+}
+
+public sealed class TaskListQueryValidator : AbstractValidator<TaskListQuery>
+{
+    private static readonly string[] SortFields =
+    [
+        "title",
+        "status",
+        "priority",
+        "dueDate",
+        "createdAtUtc"
+    ];
+
+    public TaskListQueryValidator()
+    {
+        RuleFor(query => query.Page)
+            .GreaterThanOrEqualTo(1);
+
+        RuleFor(query => query.PageSize)
+            .InclusiveBetween(1, 100);
+
+        RuleFor(query => query.Status)
+            .IsInEnum()
+            .When(query => query.Status is not null);
+
+        RuleFor(query => query.Priority)
+            .IsInEnum()
+            .When(query => query.Priority is not null);
+
+        RuleFor(query => query.SortBy)
+            .Must(sortBy => sortBy is null || SortFields.Contains(sortBy, StringComparer.OrdinalIgnoreCase))
+            .WithMessage($"sortBy must be one of: {string.Join(", ", SortFields)}.");
+
+        RuleFor(query => query.SortDirection)
+            .Must(direction => direction is null
+                || direction.Equals("asc", StringComparison.OrdinalIgnoreCase)
+                || direction.Equals("desc", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("sortDirection must be either asc or desc.");
+    }
+}
