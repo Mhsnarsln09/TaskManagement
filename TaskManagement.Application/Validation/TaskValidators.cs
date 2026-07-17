@@ -1,8 +1,7 @@
 using FluentValidation;
-using TaskManagement.Api.Contracts;
-using TaskManagement.Domain.Tasks;
+using TaskManagement.Application.Contracts;
 
-namespace TaskManagement.Api.Validation;
+namespace TaskManagement.Application.Validation;
 
 public sealed class CreateTaskRequestValidator : AbstractValidator<CreateTaskRequest>
 {

@@ -1,4 +1,4 @@
-namespace TaskManagement.Api.Services;
+namespace TaskManagement.Application.Authentication;
 
 public static class ApplicationRoles
 {

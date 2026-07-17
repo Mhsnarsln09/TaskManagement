@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskManagement.Api.Contracts;
-using TaskManagement.Api.Services;
+using TaskManagement.Application.Contracts;
+using TaskManagement.Application.Projects;
 
 namespace TaskManagement.Api.Controllers;
 

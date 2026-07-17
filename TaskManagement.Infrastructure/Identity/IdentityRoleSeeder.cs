@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using TaskManagement.Application.Authentication;
 
-namespace TaskManagement.Api.Services;
+namespace TaskManagement.Infrastructure.Identity;
 
 public static class IdentityRoleSeeder
 {

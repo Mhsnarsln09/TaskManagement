@@ -1,7 +1,7 @@
 using FluentValidation;
-using TaskManagement.Api.Contracts;
+using TaskManagement.Application.Contracts;
 
-namespace TaskManagement.Api.Validation;
+namespace TaskManagement.Application.Validation;
 
 public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 {

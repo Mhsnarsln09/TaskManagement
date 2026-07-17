@@ -1,19 +1,16 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using TaskManagement.Api.Contracts;
-using TaskManagement.Infrastructure.Identity;
+using TaskManagement.Application.Abstractions;
+using TaskManagement.Application.Contracts;
 
-namespace TaskManagement.Api.Services;
+namespace TaskManagement.Infrastructure.Authentication;
 
-public sealed class JwtTokenService(
-    UserManager<ApplicationUser> userManager,
-    IOptions<JwtOptions> jwtOptions)
+public sealed class JwtTokenService(IOptions<JwtOptions> jwtOptions) : IAccessTokenGenerator
 {
-    public async Task<AuthResponse> CreateTokenAsync(ApplicationUser user)
+    public AuthResponse CreateToken(UserResponse user)
     {
         JwtOptions options = jwtOptions.Value;
         if (string.IsNullOrWhiteSpace(options.SigningKey))
@@ -26,20 +23,19 @@ public sealed class JwtTokenService(
             throw new InvalidOperationException("JWT signing key must be at least 32 bytes.");
         }
 
-        IList<string> roles = await userManager.GetRolesAsync(user);
         DateTimeOffset expiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(options.ExpiryMinutes);
 
         List<Claim> claims =
         [
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new(JwtRegisteredClaimNames.UniqueName, user.UserName ?? string.Empty),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new(JwtRegisteredClaimNames.UniqueName, user.UserName),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.UserName ?? string.Empty),
-            new(ClaimTypes.Email, user.Email ?? string.Empty)
+            new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.Email, user.Email)
         ];
 
-        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var credentials = new SigningCredentials(
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.SigningKey)),
@@ -54,14 +50,6 @@ public sealed class JwtTokenService(
 
         string accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return new AuthResponse(
-            accessToken,
-            expiresAtUtc,
-            new UserResponse(
-                user.Id,
-                user.Email ?? string.Empty,
-                user.UserName ?? string.Empty,
-                user.DisplayName,
-                roles.ToArray()));
+        return new AuthResponse(accessToken, expiresAtUtc, user);
     }
 }

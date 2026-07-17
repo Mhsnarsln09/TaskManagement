@@ -1,55 +1,33 @@
-using Microsoft.EntityFrameworkCore;
-using TaskManagement.Api.Contracts;
-using TaskManagement.Api.Errors;
+using TaskManagement.Application.Abstractions;
+using TaskManagement.Application.Contracts;
+using TaskManagement.Application.Errors;
 using TaskManagement.Domain.Projects;
-using TaskManagement.Infrastructure.Persistence;
 
-namespace TaskManagement.Api.Services;
+namespace TaskManagement.Application.Projects;
 
 public sealed class ProjectService(
-    ApplicationDbContext dbContext,
+    IProjectRepository projectRepository,
     ICurrentUser currentUser)
 {
-    public async Task<ProjectResponse> CreateAsync(CreateProjectRequest request, CancellationToken cancellationToken)
+    public async Task<ProjectResponse> CreateAsync(
+        CreateProjectRequest request,
+        CancellationToken cancellationToken)
     {
         var project = new Project(Guid.NewGuid(), request.Name, request.Description, currentUser.UserId);
-        dbContext.Projects.Add(project);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await projectRepository.AddAsync(project, cancellationToken);
+        await projectRepository.SaveChangesAsync(cancellationToken);
 
         return Map(project);
     }
 
-    public async Task<IReadOnlyCollection<ProjectResponse>> ListAsync(CancellationToken cancellationToken)
+    public Task<IReadOnlyCollection<ProjectResponse>> ListAsync(CancellationToken cancellationToken)
     {
-        return await dbContext.Projects
-            .AsNoTracking()
-            .Where(project => project.OwnerUserId == currentUser.UserId)
-            .OrderBy(project => project.Name)
-            .ThenBy(project => project.Id)
-            .Select(project => new ProjectResponse(
-                project.Id,
-                project.Name,
-                project.Description,
-                project.OwnerUserId,
-                project.CreatedAtUtc,
-                project.UpdatedAtUtc))
-            .ToListAsync(cancellationToken);
+        return projectRepository.ListByOwnerAsync(currentUser.UserId, cancellationToken);
     }
 
     public async Task<ProjectResponse> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-        ProjectResponse? project = await dbContext.Projects
-            .AsNoTracking()
-            .Where(project => project.Id == id)
-            .Select(project => new ProjectResponse(
-                project.Id,
-                project.Name,
-                project.Description,
-                project.OwnerUserId,
-                project.CreatedAtUtc,
-                project.UpdatedAtUtc))
-            .SingleOrDefaultAsync(cancellationToken);
-
+        ProjectResponse? project = await projectRepository.GetResponseAsync(id, cancellationToken);
         if (project is null)
         {
             throw new NotFoundException("Project was not found.");
@@ -68,7 +46,7 @@ public sealed class ProjectService(
 
         project.Rename(request.Name);
         project.ChangeDescription(request.Description);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await projectRepository.SaveChangesAsync(cancellationToken);
 
         return Map(project);
     }
@@ -76,13 +54,13 @@ public sealed class ProjectService(
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         Project project = await GetOwnedProjectEntityAsync(id, cancellationToken);
-        dbContext.Projects.Remove(project);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        projectRepository.Remove(project);
+        await projectRepository.SaveChangesAsync(cancellationToken);
     }
 
     private async Task<Project> GetOwnedProjectEntityAsync(Guid id, CancellationToken cancellationToken)
     {
-        Project? project = await dbContext.Projects.SingleOrDefaultAsync(project => project.Id == id, cancellationToken);
+        Project? project = await projectRepository.GetEntityAsync(id, cancellationToken);
         if (project is null)
         {
             throw new NotFoundException("Project was not found.");

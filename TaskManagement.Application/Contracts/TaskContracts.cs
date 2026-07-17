@@ -1,6 +1,6 @@
 using TaskManagement.Domain.Tasks;
 
-namespace TaskManagement.Api.Contracts;
+namespace TaskManagement.Application.Contracts;
 
 public sealed record CreateTaskRequest(
     string Title,

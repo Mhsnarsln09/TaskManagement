@@ -1,12 +1,8 @@
 using System.Security.Claims;
-using TaskManagement.Api.Errors;
+using TaskManagement.Application.Abstractions;
+using TaskManagement.Application.Errors;
 
-namespace TaskManagement.Api.Services;
-
-public interface ICurrentUser
-{
-    Guid UserId { get; }
-}
+namespace TaskManagement.Api.Security;
 
 public sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUser
 {

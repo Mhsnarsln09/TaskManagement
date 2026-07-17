@@ -2,18 +2,17 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using TaskManagement.Application;
+using TaskManagement.Application.Abstractions;
 using TaskManagement.Api.Errors;
 using TaskManagement.Api.OpenApi;
-using TaskManagement.Api.Services;
-using TaskManagement.Api.Validation;
+using TaskManagement.Api.Security;
 using TaskManagement.Infrastructure;
-using TaskManagement.Infrastructure.Identity;
-using TaskManagement.Infrastructure.Persistence;
+using TaskManagement.Infrastructure.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,12 +26,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateProjectRequestValidator>();
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
-builder.Services.AddIdentityCore<ApplicationUser>()
-    .AddRoles<IdentityRole<Guid>>()
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddApplication();
 JwtOptions jwtOptions = builder.Configuration
     .GetSection(JwtOptions.SectionName)
     .Get<JwtOptions>() ?? new JwtOptions();
@@ -83,10 +77,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<JwtTokenService>();
-builder.Services.AddScoped<ProjectService>();
-builder.Services.AddScoped<TaskService>();
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
@@ -97,7 +87,7 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
-await IdentityRoleSeeder.SeedAsync(app.Services);
+await app.Services.SeedInfrastructureAsync();
 
 if (app.Environment.IsDevelopment())
 {

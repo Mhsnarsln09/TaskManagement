@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using TaskManagement.Application.Errors;
 
 namespace TaskManagement.Api.Errors;
 
@@ -16,7 +17,7 @@ public sealed class GlobalExceptionHandler(
     {
         int statusCode = exception switch
         {
-            ApiException handledApiException => handledApiException.StatusCode,
+            ApplicationExceptionBase handledApplicationException => handledApplicationException.StatusCode,
             ArgumentException => StatusCodes.Status400BadRequest,
             InvalidOperationException => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
@@ -34,8 +35,8 @@ public sealed class GlobalExceptionHandler(
             : new ProblemDetails();
 
         problem.Status = statusCode;
-        problem.Title = exception is ApiException apiException
-            ? apiException.Title
+        problem.Title = exception is ApplicationExceptionBase applicationException
+            ? applicationException.Title
             : ReasonPhrases.GetReasonPhrase(statusCode);
         problem.Detail = exception.Message;
         problem.Instance = httpContext.Request.Path;

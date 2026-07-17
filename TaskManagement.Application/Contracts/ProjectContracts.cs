@@ -1,4 +1,4 @@
-namespace TaskManagement.Api.Contracts;
+namespace TaskManagement.Application.Contracts;
 
 public sealed record CreateProjectRequest(string Name, string? Description);
 

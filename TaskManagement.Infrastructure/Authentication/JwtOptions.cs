@@ -1,4 +1,4 @@
-namespace TaskManagement.Api.Services;
+namespace TaskManagement.Infrastructure.Authentication;
 
 public sealed class JwtOptions
 {
