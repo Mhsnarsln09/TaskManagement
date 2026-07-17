@@ -13,13 +13,13 @@ public sealed class ProjectRepository(ApplicationDbContext dbContext) : IProject
         await dbContext.Projects.AddAsync(project, cancellationToken);
     }
 
-    public async Task<IReadOnlyCollection<ProjectResponse>> ListByOwnerAsync(
-        Guid ownerUserId,
+    public async Task<IReadOnlyCollection<ProjectResponse>> ListForUserAsync(
+        Guid userId,
         CancellationToken cancellationToken)
     {
         return await dbContext.Projects
             .AsNoTracking()
-            .Where(project => project.OwnerUserId == ownerUserId)
+            .Where(project => project.Members.Any(member => member.UserId == userId))
             .OrderBy(project => project.Name)
             .ThenBy(project => project.Id)
             .Select(project => new ProjectResponse(
@@ -30,6 +30,22 @@ public sealed class ProjectRepository(ApplicationDbContext dbContext) : IProject
                 project.CreatedAtUtc,
                 project.UpdatedAtUtc))
             .ToListAsync(cancellationToken);
+    }
+
+    public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return dbContext.Projects
+            .AsNoTracking()
+            .AnyAsync(project => project.Id == id, cancellationToken);
+    }
+
+    public Task<bool> IsMemberAsync(Guid projectId, Guid userId, CancellationToken cancellationToken)
+    {
+        return dbContext.ProjectMembers
+            .AsNoTracking()
+            .AnyAsync(
+                member => member.ProjectId == projectId && member.UserId == userId,
+                cancellationToken);
     }
 
     public async Task<ProjectResponse?> GetResponseAsync(Guid id, CancellationToken cancellationToken)

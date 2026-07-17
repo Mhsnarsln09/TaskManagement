@@ -1,6 +1,4 @@
 using System.Text.Json.Serialization;
-using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -11,13 +9,17 @@ using TaskManagement.Application.Abstractions;
 using TaskManagement.Api.Errors;
 using TaskManagement.Api.OpenApi;
 using TaskManagement.Api.Security;
+using TaskManagement.Api.Validation;
 using TaskManagement.Infrastructure;
 using TaskManagement.Infrastructure.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
-    .AddControllers()
+    .AddControllers(options =>
+    {
+        options.Filters.Add<AutoValidationActionFilter>();
+    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -25,11 +27,16 @@ builder.Services
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddApplication();
 JwtOptions jwtOptions = builder.Configuration
     .GetSection(JwtOptions.SectionName)
     .Get<JwtOptions>() ?? new JwtOptions();
+if (Encoding.UTF8.GetByteCount(jwtOptions.SigningKey) < 32)
+{
+    throw new InvalidOperationException(
+        "Jwt:SigningKey is not configured or is shorter than 32 bytes. "
+        + "Set it via user secrets or environment variables before starting the API.");
+}
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -103,3 +110,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Exposes the entry point to WebApplicationFactory-based integration tests.
+public partial class Program;

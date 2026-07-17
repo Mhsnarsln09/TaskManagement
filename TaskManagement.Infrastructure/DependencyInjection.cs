@@ -24,7 +24,17 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
-        services.AddIdentityCore<ApplicationUser>()
+        // Password rules must stay in sync with RegisterRequestValidator so that a
+        // request passing FluentValidation cannot be rejected later by Identity.
+        services.AddIdentityCore<ApplicationUser>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireDigit = true;
+                options.Password.RequireNonAlphanumeric = false;
+            })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 

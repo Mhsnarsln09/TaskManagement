@@ -36,11 +36,7 @@ public sealed class ProjectMemberConfiguration : IEntityTypeConfiguration<Projec
         builder.HasIndex(member => new { member.ProjectId, member.UserId })
             .IsUnique();
 
-        builder.HasOne<Project>()
-            .WithMany(project => project.Members)
-            .HasForeignKey(member => member.ProjectId)
-            .OnDelete(DeleteBehavior.Cascade);
-
+        // The Project -> Members relationship is configured in ProjectConfiguration.
         builder.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(member => member.UserId)

@@ -9,7 +9,7 @@ public sealed class ProjectTests
     {
         Guid ownerUserId = Guid.NewGuid();
 
-        Project project = new(Guid.NewGuid(), "Project", null, ownerUserId);
+        Project project = Project.Create(Guid.NewGuid(), "Project", null, ownerUserId);
 
         ProjectMember member = Assert.Single(project.Members);
         Assert.Equal(ownerUserId, member.UserId);
@@ -20,7 +20,7 @@ public sealed class ProjectTests
     public void AddMember_IgnoresDuplicateUser()
     {
         Guid ownerUserId = Guid.NewGuid();
-        Project project = new(Guid.NewGuid(), "Project", null, ownerUserId);
+        Project project = Project.Create(Guid.NewGuid(), "Project", null, ownerUserId);
 
         project.AddMember(ownerUserId);
 

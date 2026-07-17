@@ -13,7 +13,7 @@ public sealed class ProjectService(
         CreateProjectRequest request,
         CancellationToken cancellationToken)
     {
-        var project = new Project(Guid.NewGuid(), request.Name, request.Description, currentUser.UserId);
+        Project project = Project.Create(Guid.NewGuid(), request.Name, request.Description, currentUser.UserId);
         await projectRepository.AddAsync(project, cancellationToken);
         await projectRepository.SaveChangesAsync(cancellationToken);
 
@@ -22,7 +22,7 @@ public sealed class ProjectService(
 
     public Task<IReadOnlyCollection<ProjectResponse>> ListAsync(CancellationToken cancellationToken)
     {
-        return projectRepository.ListByOwnerAsync(currentUser.UserId, cancellationToken);
+        return projectRepository.ListForUserAsync(currentUser.UserId, cancellationToken);
     }
 
     public async Task<ProjectResponse> GetAsync(Guid id, CancellationToken cancellationToken)
@@ -33,7 +33,11 @@ public sealed class ProjectService(
             throw new NotFoundException("Project was not found.");
         }
 
-        EnsureProjectOwner(project.OwnerUserId);
+        if (!await projectRepository.IsMemberAsync(id, currentUser.UserId, cancellationToken))
+        {
+            throw new ForbiddenException("You do not have access to this project.");
+        }
+
         return project;
     }
 
@@ -74,7 +78,7 @@ public sealed class ProjectService(
     {
         if (ownerUserId != currentUser.UserId)
         {
-            throw new ForbiddenException("You do not have access to this project.");
+            throw new ForbiddenException("Only the project owner can modify this project.");
         }
     }
 

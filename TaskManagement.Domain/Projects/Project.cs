@@ -6,7 +6,9 @@ public sealed class Project : Entity
 {
     private readonly List<ProjectMember> _members = [];
 
-    public Project(Guid id, string name, string? description, Guid ownerUserId)
+    // EF Core materializes entities through this constructor; it must stay free
+    // of side effects such as seeding the owner membership.
+    private Project(Guid id, string name, string? description, Guid ownerUserId)
         : base(id)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -22,8 +24,13 @@ public sealed class Project : Entity
         Name = name.Trim();
         Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
         OwnerUserId = ownerUserId;
+    }
 
-        _members.Add(new ProjectMember(Guid.NewGuid(), Id, ownerUserId));
+    public static Project Create(Guid id, string name, string? description, Guid ownerUserId)
+    {
+        var project = new Project(id, name, description, ownerUserId);
+        project._members.Add(new ProjectMember(Guid.NewGuid(), project.Id, ownerUserId));
+        return project;
     }
 
     public string Name { get; private set; }

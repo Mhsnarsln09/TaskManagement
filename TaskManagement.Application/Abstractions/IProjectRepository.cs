@@ -7,9 +7,13 @@ public interface IProjectRepository
 {
     Task AddAsync(Project project, CancellationToken cancellationToken);
 
-    Task<IReadOnlyCollection<ProjectResponse>> ListByOwnerAsync(
-        Guid ownerUserId,
+    Task<IReadOnlyCollection<ProjectResponse>> ListForUserAsync(
+        Guid userId,
         CancellationToken cancellationToken);
+
+    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<bool> IsMemberAsync(Guid projectId, Guid userId, CancellationToken cancellationToken);
 
     Task<ProjectResponse?> GetResponseAsync(Guid id, CancellationToken cancellationToken);
 

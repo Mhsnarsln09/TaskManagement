@@ -12,12 +12,12 @@ namespace TaskManagement.Api.Controllers;
 public sealed class AuthController(AuthService authService) : ControllerBase
 {
     [HttpPost("register")]
-    [ProducesResponseType<AuthResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<AuthResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
     {
         AuthResponse response = await authService.RegisterAsync(request);
-        return Ok(response);
+        return StatusCode(StatusCodes.Status201Created, response);
     }
 
     [HttpPost("login")]

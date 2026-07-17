@@ -61,7 +61,7 @@ public sealed class TaskItem : Entity
 
         if (Status != WorkItemStatus.Todo)
         {
-            throw new InvalidOperationException("Only todo tasks can be started.");
+            throw new DomainException("Only todo tasks can be started.");
         }
 
         Status = WorkItemStatus.InProgress;
@@ -74,7 +74,7 @@ public sealed class TaskItem : Entity
 
         if (Status != WorkItemStatus.InProgress)
         {
-            throw new InvalidOperationException("Only in progress tasks can be completed.");
+            throw new DomainException("Only in progress tasks can be completed.");
         }
 
         Status = WorkItemStatus.Completed;
@@ -143,12 +143,12 @@ public sealed class TaskItem : Entity
     {
         if (Status == WorkItemStatus.Completed)
         {
-            throw new InvalidOperationException("Completed tasks cannot be changed.");
+            throw new DomainException("Completed tasks cannot be changed.");
         }
 
         if (Status == WorkItemStatus.Cancelled)
         {
-            throw new InvalidOperationException("Cancelled tasks cannot be changed.");
+            throw new DomainException("Cancelled tasks cannot be changed.");
         }
     }
 }

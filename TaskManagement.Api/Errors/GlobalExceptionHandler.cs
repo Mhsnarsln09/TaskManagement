@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using TaskManagement.Application.Errors;
+using TaskManagement.Domain.Common;
 
 namespace TaskManagement.Api.Errors;
 
@@ -18,8 +20,8 @@ public sealed class GlobalExceptionHandler(
         int statusCode = exception switch
         {
             ApplicationExceptionBase handledApplicationException => handledApplicationException.StatusCode,
-            ArgumentException => StatusCodes.Status400BadRequest,
-            InvalidOperationException => StatusCodes.Status409Conflict,
+            DomainException => StatusCodes.Status409Conflict,
+            DbUpdateConcurrencyException => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
 
@@ -38,7 +40,15 @@ public sealed class GlobalExceptionHandler(
         problem.Title = exception is ApplicationExceptionBase applicationException
             ? applicationException.Title
             : ReasonPhrases.GetReasonPhrase(statusCode);
-        problem.Detail = exception.Message;
+        problem.Detail = exception switch
+        {
+            DbUpdateConcurrencyException =>
+                "The resource was modified by another request. Refresh and retry.",
+            // Unexpected exceptions must not leak internal details to clients.
+            _ when statusCode == StatusCodes.Status500InternalServerError =>
+                "An unexpected error occurred.",
+            _ => exception.Message
+        };
         problem.Instance = httpContext.Request.Path;
 
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext

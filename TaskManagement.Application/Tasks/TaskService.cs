@@ -16,6 +16,7 @@ public sealed class TaskService(
         CancellationToken cancellationToken)
     {
         await EnsureProjectAccessAsync(projectId, cancellationToken);
+        await EnsureAssigneeIsMemberAsync(projectId, request.AssigneeUserId, cancellationToken);
 
         var task = new TaskItem(
             Guid.NewGuid(),
@@ -56,6 +57,7 @@ public sealed class TaskService(
         CancellationToken cancellationToken)
     {
         await EnsureProjectAccessAsync(projectId, cancellationToken);
+        await EnsureAssigneeIsMemberAsync(projectId, request.AssigneeUserId, cancellationToken);
 
         TaskItem task = await GetTaskEntityAsync(projectId, taskId, cancellationToken);
 
@@ -81,15 +83,33 @@ public sealed class TaskService(
 
     private async Task EnsureProjectAccessAsync(Guid projectId, CancellationToken cancellationToken)
     {
-        ProjectResponse? project = await projectRepository.GetResponseAsync(projectId, cancellationToken);
-        if (project is null)
+        if (!await projectRepository.ExistsAsync(projectId, cancellationToken))
         {
             throw new NotFoundException("Project was not found.");
         }
 
-        if (project.OwnerUserId != currentUser.UserId)
+        if (!await projectRepository.IsMemberAsync(projectId, currentUser.UserId, cancellationToken))
         {
             throw new ForbiddenException("You do not have access to this project.");
+        }
+    }
+
+    private async Task EnsureAssigneeIsMemberAsync(
+        Guid projectId,
+        Guid? assigneeUserId,
+        CancellationToken cancellationToken)
+    {
+        if (assigneeUserId is null)
+        {
+            return;
+        }
+
+        if (!await projectRepository.IsMemberAsync(projectId, assigneeUserId.Value, cancellationToken))
+        {
+            throw new ValidationProblemException(new Dictionary<string, string[]>
+            {
+                ["assigneeUserId"] = ["Assignee must be a member of the project."]
+            });
         }
     }
 

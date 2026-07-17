@@ -1,3 +1,4 @@
+using TaskManagement.Domain.Common;
 using TaskManagement.Domain.Tasks;
 
 namespace TaskManagement.UnitTests.Domain;
@@ -23,7 +24,7 @@ public sealed class TaskItemTests
     {
         TaskItem task = CreateTask();
 
-        Assert.Throws<InvalidOperationException>(task.Complete);
+        Assert.Throws<DomainException>(task.Complete);
     }
 
     [Fact]
@@ -44,7 +45,7 @@ public sealed class TaskItemTests
         task.Start();
         task.Complete();
 
-        Assert.Throws<InvalidOperationException>(() => task.Rename("New title"));
+        Assert.Throws<DomainException>(() => task.Rename("New title"));
     }
 
     [Fact]

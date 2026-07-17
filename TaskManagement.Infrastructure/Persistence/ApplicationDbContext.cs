@@ -29,5 +29,13 @@ public sealed class ApplicationDbContext
         base.OnModelCreating(builder);
 
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // "xmin" is a PostgreSQL system column; other providers (e.g. Sqlite in tests)
+        // must not map it, so the concurrency token is configured per provider here.
+        if (Database.IsNpgsql())
+        {
+            builder.Entity<Project>().Property<uint>("xmin").IsRowVersion();
+            builder.Entity<TaskItem>().Property<uint>("xmin").IsRowVersion();
+        }
     }
 }
