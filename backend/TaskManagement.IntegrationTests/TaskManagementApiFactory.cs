@@ -61,5 +61,10 @@ public sealed class TaskManagementApiFactory : WebApplicationFactory<Program>, I
         builder.UseSetting("FileStorage:Local:RootPath", StorageRootPath);
         builder.UseSetting("BackgroundJobs:Enabled", "false");
         builder.UseSetting("Database:MigrateOnStartup", "false");
+        builder.UseSetting("BootstrapAdmin:Enabled", "true");
+        builder.UseSetting("BootstrapAdmin:Email", "superadmin@test.local");
+        builder.UseSetting("BootstrapAdmin:UserName", "superadmin");
+        builder.UseSetting("BootstrapAdmin:Password", "SuperAdminPassword1");
+        builder.UseSetting("BootstrapAdmin:DisplayName", "Test Super Admin");
     }
 }

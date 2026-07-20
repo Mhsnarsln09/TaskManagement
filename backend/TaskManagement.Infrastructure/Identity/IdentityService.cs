@@ -66,6 +66,15 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager) : 
         return user is null ? null : await MapAsync(user);
     }
 
+    public Task<string?> GetSecurityStampAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        return userManager.Users
+            .AsNoTracking()
+            .Where(user => user.Id == userId)
+            .Select(user => user.SecurityStamp)
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyDictionary<Guid, UserSummaryResponse>> GetUserSummariesAsync(
         IReadOnlyCollection<Guid> userIds,
         CancellationToken cancellationToken)

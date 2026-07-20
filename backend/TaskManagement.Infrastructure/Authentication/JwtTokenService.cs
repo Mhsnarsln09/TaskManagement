@@ -90,6 +90,8 @@ public sealed class JwtTokenService(
 
         DateTimeOffset now = timeProvider.GetUtcNow();
         DateTimeOffset expiresAtUtc = now.AddMinutes(options.ExpiryMinutes);
+        string securityStamp = await identityService.GetSecurityStampAsync(user.Id, cancellationToken)
+            ?? throw new UnauthorizedException("Token user no longer exists.");
 
         List<Claim> claims =
         [
@@ -98,7 +100,8 @@ public sealed class JwtTokenService(
             new(JwtRegisteredClaimNames.UniqueName, user.UserName),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.Email, user.Email)
+            new(ClaimTypes.Email, user.Email),
+            new("security_stamp", securityStamp)
         ];
 
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));

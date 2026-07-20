@@ -30,6 +30,12 @@
 - Sayfalı bildirim merkezi, okunmamış durumu ve okundu işaretleme
 - SignalR ile yeni bildirimi toast ve liste güncellemesi olarak alma
 
+### SuperAdmin
+
+- Yalnızca SuperAdmin rolüne görünen sayfalı kullanıcı listesi ve arama
+- Kullanıcının `SuperAdmin`, `Admin`, `ProjectManager`, `Member` rollerini değiştirme
+- Son SuperAdmin kuralı ve rol değişiminden sonra hedef kullanıcının oturumunun kapanması
+
 ## Kabul kriterleri
 
 - Bütün istekler yapılandırılabilir API base URL üzerinden yapılır.

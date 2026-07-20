@@ -59,3 +59,10 @@
 - [ ] Unit/component ve kritik E2E testlerini ekle
 - [ ] Lint, typecheck, test ve build adımlarını CI'a ekle
 - [ ] Kurulum, geliştirme ve deployment belgelerini tamamla
+
+## 09 - SuperAdmin
+
+- [ ] SuperAdmin'e özel kullanıcı listesi, arama ve pagination ekranını uygula
+- [ ] Çoklu rol değiştirme formunu ve son SuperAdmin conflict durumunu uygula
+- [ ] SuperAdmin olmayan kullanıcılardan navigasyonu ve route'u koru
+- [ ] Rolü değişen hedef kullanıcının geçersiz oturum davranışını test et

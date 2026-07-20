@@ -45,6 +45,8 @@
     <Compile Include="Files/LocalFileStorage.cs" />
     <Compile Include="Files/LocalFileStorageOptions.cs" />
     <Compile Include="Identity/ApplicationUser.cs" />
+    <Compile Include="Identity/BootstrapAdminOptions.cs" />
+    <Compile Include="Identity/IdentityAdministration.cs" />
     <Compile Include="Identity/IdentityRoleSeeder.cs" />
     <Compile Include="Identity/IdentityService.cs" />
     <Compile Include="Persistence/ApplicationDbContext.cs" />
@@ -67,6 +69,8 @@
     <Compile Include="Persistence/Migrations/20260720073900_AddAttachments.cs" />
     <Compile Include="Persistence/Migrations/20260720104648_AddPostMvpFeatures.Designer.cs" />
     <Compile Include="Persistence/Migrations/20260720104648_AddPostMvpFeatures.cs" />
+    <Compile Include="Persistence/Migrations/20260720122158_AddSuperAdminRoleManagement.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260720122158_AddSuperAdminRoleManagement.cs" />
     <Compile Include="Persistence/Migrations/ApplicationDbContextModelSnapshot.cs" />
     <Compile Include="Repositories/AttachmentRepository.cs" />
     <Compile Include="Repositories/CommentRepository.cs" />

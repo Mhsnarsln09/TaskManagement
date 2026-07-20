@@ -27,7 +27,19 @@ döndürür. API çağrılarında:
 Register request yalnızca `email`, `userName`, `password` ve nullable `displayName`
 alanlarını kabul eder. **Rol alanı yoktur ve kayıt ekranında rol seçimi
 gösterilmemelidir.** Backend her yeni kullanıcıyı otomatik `Member` yapar. Mevcut
-API'de kullanıcı/rol yönetimi veya SuperAdmin endpoint'i yoktur.
+roller `SuperAdmin`, `Admin`, `ProjectManager` ve `Member`dır.
+
+## SuperAdmin ve rol yönetimi
+
+Yalnızca `SuperAdmin` rolü aşağıdaki endpoint'lere erişebilir:
+
+- `GET /api/admin/users?page=1&pageSize=20&search=`
+- `PUT /api/admin/users/{userId}/roles`, body: `{ "roles": ["Member", "ProjectManager"] }`
+
+Liste response'u kullanıcı için `id`, `email`, `userName`, nullable `displayName` ve
+`roles` döndürür. Rol değişimi hedef kullanıcının mevcut access ve refresh tokenlarını
+geçersiz kılar; hedef kullanıcı yeniden giriş yapmalıdır. Son `SuperAdmin` rolünü
+kaldırma isteği `409` döner. Public kayıt formunda rol seçimi yine gösterilmez.
 
 ```http
 Authorization: Bearer ACCESS_TOKEN

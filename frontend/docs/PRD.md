@@ -13,12 +13,13 @@ tek doğruluk kaynağı kabul eder.
 - **Member:** Üyesi olduğu projeleri ve görevleri görür; izin verilen görevleri
   günceller, yorum ve ek dosya paylaşır.
 - **Admin:** Mevcut backend'de proje kaynakları için sistem seviyesi yetkiye sahiptir.
-  MVP'de kullanıcı/rol yönetim paneli yoktur.
+  Kullanıcı rollerini değiştiremez.
+- **SuperAdmin:** Sayfalı kullanıcı listesini görür, kullanıcı arar ve sistem rollerini
+  yönetir. Son SuperAdmin'in rolü kaldırılamaz.
 
 Public kayıt sırasında rol seçilmez; `email`, `userName`, `password` ve isteğe bağlı
-`displayName` gönderilir ve backend kullanıcıyı otomatik `Member` yapar. SuperAdmin
-ve rol yönetimi henüz uygulanmamıştır; backend `09-super-admin-role-management`
-görevinin kapsamındadır ve tamamlanana kadar frontend'de gösterilmez.
+`displayName` gönderilir ve backend kullanıcıyı otomatik `Member` yapar. Rol yönetimi
+yalnızca oturum açmış `SuperAdmin` kullanıcısına gösterilir.
 
 ## 3. Temel kullanıcı akışları
 
@@ -38,6 +39,7 @@ görevinin kapsamındadır ve tamamlanana kadar frontend'de gösterilmez.
 - Görev liste görünümü ve görev detay paneli/sayfası
 - Yorumlar ve dosya ekleri
 - Bildirim merkezi
+- SuperAdmin için kullanıcı arama ve rol yönetimi
 - Hesap/oturum menüsü
 - 403, 404, genel hata ve bağlantı kesilmesi durumları
 
@@ -60,7 +62,6 @@ görevinin kapsamındadır ve tamamlanana kadar frontend'de gösterilmez.
 
 ## 7. MVP dışı
 
-- SuperAdmin ve kullanıcı/rol yönetim paneli (backend görevi tamamlanana kadar)
 - Takvim ve Gantt görünümü
 - Sürükle-bırak Kanban
 - Genel kullanıcı arama API'si gerektiren üye keşfi

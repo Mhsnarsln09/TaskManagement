@@ -32,6 +32,8 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        services.Configure<BootstrapAdminOptions>(
+            configuration.GetSection(BootstrapAdminOptions.SectionName));
         // Password rules must stay in sync with RegisterRequestValidator so that a
         // request passing FluentValidation cannot be rejected later by Identity.
         services.AddIdentityCore<ApplicationUser>(options =>
@@ -56,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IIdentityAdministration, IdentityAdministration>();
         services.AddScoped<IAccessTokenGenerator, JwtTokenService>();
         services.AddScoped<IEmailSender, LoggingEmailSender>();
         services.AddScoped<DueDateReminderJob>();

@@ -22,6 +22,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Hangfire;
 using TaskManagement.Infrastructure.BackgroundJobs;
+using TaskManagement.Application.Authentication;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -117,6 +119,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
         options.Events = new JwtBearerEvents
         {
+            OnTokenValidated = async context =>
+            {
+                string? userIdClaim = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                string? tokenStamp = context.Principal?.FindFirstValue("security_stamp");
+                if (!Guid.TryParse(userIdClaim, out Guid userId) || string.IsNullOrWhiteSpace(tokenStamp))
+                {
+                    context.Fail("Token security stamp is missing or invalid.");
+                    return;
+                }
+
+                IIdentityService identityService = context.HttpContext.RequestServices
+                    .GetRequiredService<IIdentityService>();
+                string? currentStamp = await identityService.GetSecurityStampAsync(
+                    userId,
+                    context.HttpContext.RequestAborted);
+                if (!string.Equals(tokenStamp, currentStamp, StringComparison.Ordinal))
+                {
+                    context.Fail("Token is no longer valid.");
+                }
+            },
             OnMessageReceived = context =>
             {
                 string? accessToken = context.Request.Query["access_token"];
@@ -159,7 +181,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SuperAdminOnly", policy =>
+        policy.RequireRole(ApplicationRoles.SuperAdmin));
+});
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddOpenApi(options =>
 {

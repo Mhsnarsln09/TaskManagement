@@ -20,11 +20,14 @@ PRODUCT AND BACKEND CAPABILITIES
   fields; displayName is optional. Password requires at least 8 characters with an
   uppercase letter, a lowercase letter, and a digit.
 - Login accepts one userNameOrEmail field and password.
-- Auth responses contain the current user's roles: Admin, ProjectManager, Member.
-  Roles affect permissions after login but users cannot select, request, edit, or
-  assign roles anywhere in the current frontend.
-- There is currently NO SuperAdmin, user administration, role management, user
-  directory, or user search API. Do not design any screen or control for them.
+- Auth responses contain the current user's roles: SuperAdmin, Admin,
+  ProjectManager, Member. Roles affect permissions after login. Public registration
+  never selects or requests a role.
+- Only SuperAdmin can access user administration. GET /api/admin/users supports page,
+  pageSize, and search and returns id, email, userName, optional displayName, and
+  roles. PUT /api/admin/users/{userId}/roles replaces roles with one or more values
+  from SuperAdmin, Admin, ProjectManager, Member. Removing the final SuperAdmin
+  returns 409. A role change invalidates the target user's current session.
 - Users only see projects they own or belong to.
 - Projects can be created, viewed, edited, and deleted.
 - Project owners can list, add, and remove project members. The current member list
@@ -52,7 +55,8 @@ PRODUCT AND BACKEND CAPABILITIES
 - The backend returns validation errors and 400, 401, 403, 404, 409, 429 states.
 - Do not invent unsupported features such as chat, mentions, tags, subtasks,
   calendar, Gantt, time tracking, user avatars/photos, drag-and-drop Kanban, role
-  selection, role administration, user search, global search, or activity feeds.
+  selection during registration, global search, or activity feeds. User search is
+  available only inside the SuperAdmin user administration screen.
 
 API-CONTRACT RULE (MANDATORY)
 Every visible value, form field, filter, action, and table column must map to a field
@@ -108,6 +112,12 @@ DESIGN THESE SCREENS AND STATES
 9. Project settings/edit/delete flow with a destructive confirmation that requires
    clear acknowledgement.
 10. Global 403, 404, generic error, offline/reconnecting, and session-expired states.
+11. A SuperAdmin-only user administration screen with paginated search, columns for
+    username, email, optional display name, and current roles; a role-management
+    dialog using checkboxes; saving, validation, 404, 409 final-SuperAdmin protection,
+    and a clear notice that the target user's session will be invalidated. Do not
+    expose this navigation or route action to other roles. This is system role
+    management and must not be mixed with project membership management.
 
 INTERACTION AND COMPONENT RULES
 - Use Lucide icons for familiar actions. Icon-only controls require tooltips and
@@ -138,6 +148,7 @@ handoff and implementation in this order:
    NotificationItem, and FileAttachmentItem.
 4. Feature components: auth forms, project form/list/summary, task form/list/detail,
    member list/form, comments, attachments, and notification center.
+   Add SuperAdmin user list and role form as a separate administration feature.
 5. Route pages that compose those components and contain minimal presentation logic.
 
 Define each shared component once with its props, variants, responsive behavior,

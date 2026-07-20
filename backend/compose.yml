@@ -13,6 +13,11 @@ services:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       ConnectionStrings__Redis: redis:6379,abortConnect=false
       Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      BootstrapAdmin__Enabled: ${BOOTSTRAP_ADMIN_ENABLED:-false}
+      BootstrapAdmin__Email: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BootstrapAdmin__UserName: ${BOOTSTRAP_ADMIN_USERNAME:-}
+      BootstrapAdmin__Password: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      BootstrapAdmin__DisplayName: ${BOOTSTRAP_ADMIN_DISPLAY_NAME:-}
       Database__MigrateOnStartup: "true"
       FileStorage__Local__RootPath: /app/App_Data/attachments
     ports:

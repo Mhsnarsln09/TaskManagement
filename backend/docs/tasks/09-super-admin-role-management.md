@@ -27,41 +27,41 @@ etmeyecek ve yeni kullanıcıyı `Member` olarak oluşturmaya devam edecektir.
 
 ### Application
 
-- [ ] `SuperAdmin` rolünü `ApplicationRoles` listesine ekle.
-- [ ] Sayfalı kullanıcı listeleme/arama response'larını tanımla: `id`, `email`,
+- [x] `SuperAdmin` rolünü `ApplicationRoles` listesine ekle.
+- [x] Sayfalı kullanıcı listeleme/arama response'larını tanımla: `id`, `email`,
   `userName`, `displayName`, `roles`.
-- [ ] Rol değiştirme request'ini tanımla; yalnızca bilinen roller kabul edilsin.
-- [ ] Kullanıcı listeleme ve rol değiştirme use-case'lerini Application altında yaz.
-- [ ] Son `SuperAdmin` rolünün kaldırılamaması kuralını use-case seviyesinde koru.
-- [ ] Rol değişikliklerinde refresh token oturumlarını iptal et; eski JWT'nin rol
+- [x] Rol değiştirme request'ini tanımla; yalnızca bilinen roller kabul edilsin.
+- [x] Kullanıcı listeleme ve rol değiştirme use-case'lerini Application altında yaz.
+- [x] Son `SuperAdmin` rolünün kaldırılamaması kuralını use-case seviyesinde koru.
+- [x] Rol değişikliklerinde refresh token oturumlarını iptal et; eski JWT'nin rol
   yetkisini token süresi boyunca taşımaması için güvenlik davranışını belgeleyip test et.
 
 ### Infrastructure
 
-- [ ] Identity port'larını `UserManager`/`RoleManager` ile uygula.
-- [ ] İlk SuperAdmin'i yalnızca açıkça verilen secret/config değerleriyle idempotent
+- [x] Identity port'larını `UserManager`/`RoleManager` ile uygula.
+- [x] İlk SuperAdmin'i yalnızca açıkça verilen secret/config değerleriyle idempotent
   bootstrap et (`BootstrapAdmin:Email`, `UserName`, `Password`).
-- [ ] Bootstrap kapalıysa veya değerler eksikse varsayılan parola/hesap üretme.
-- [ ] Parola, token ve secret değerlerini loglama.
-- [ ] Rol değişikliğini mevcut audit mekanizmasına aktör, hedef kullanıcı ve eski/yeni
+- [x] Bootstrap kapalıysa veya değerler eksikse varsayılan parola/hesap üretme.
+- [x] Parola, token ve secret değerlerini loglama.
+- [x] Rol değişikliğini mevcut audit mekanizmasına aktör, hedef kullanıcı ve eski/yeni
   rollerle kaydet; hassas veri kaydetme.
 
 ### Api
 
-- [ ] `GET /api/admin/users?page=&pageSize=&search=` endpoint'ini ekle.
-- [ ] `PUT /api/admin/users/{userId}/roles` endpoint'ini ekle.
-- [ ] Endpoint'leri yalnızca `SuperAdmin` policy'si ile koru.
-- [ ] `400`, `401`, `403`, `404`, `409` Problem Details cevaplarını belgeleyip OpenAPI'ye ekle.
-- [ ] Rate limit ve correlation id davranışını mevcut pipeline ile koru.
+- [x] `GET /api/admin/users?page=&pageSize=&search=` endpoint'ini ekle.
+- [x] `PUT /api/admin/users/{userId}/roles` endpoint'ini ekle.
+- [x] Endpoint'leri yalnızca `SuperAdmin` policy'si ile koru.
+- [x] `400`, `401`, `403`, `404`, `409` Problem Details cevaplarını belgeleyip OpenAPI'ye ekle.
+- [x] Rate limit ve correlation id davranışını mevcut pipeline ile koru.
 
 ### Testler
 
-- [ ] Public register request'inde rol alanı olmadığını ve kullanıcının `Member` olduğunu test et.
-- [ ] SuperAdmin dışındaki rollerin kullanıcı listeleyemediğini/rol değiştiremediğini test et.
-- [ ] SuperAdmin'in geçerli rol atayıp kaldırabildiğini test et.
-- [ ] Bilinmeyen rol, olmayan kullanıcı ve eşzamanlı güncelleme senaryolarını test et.
-- [ ] Son SuperAdmin'in kendisini veya başka son SuperAdmin'i düşüremediğini test et.
-- [ ] Bootstrap işleminin tekrar çalıştırıldığında ikinci hesap/rol üretmediğini test et.
+- [x] Public register request'inde rol alanı olmadığını ve kullanıcının `Member` olduğunu test et.
+- [x] SuperAdmin dışındaki rollerin kullanıcı listeleyemediğini/rol değiştiremediğini test et.
+- [x] SuperAdmin'in geçerli rol atayıp kaldırabildiğini test et.
+- [x] Bilinmeyen rol, olmayan kullanıcı ve eşzamanlı güncelleme senaryolarını test et.
+- [x] Son SuperAdmin'in kendisini veya başka son SuperAdmin'i düşüremediğini test et.
+- [x] Bootstrap işleminin tekrar çalıştırıldığında ikinci hesap/rol üretmediğini test et.
 
 ## Kabul kriterleri
 
@@ -74,6 +74,6 @@ etmeyecek ve yeni kullanıcıyı `Member` olarak oluşturmaya devam edecektir.
 
 ## Migration
 
-ASP.NET Core Identity rol ve kullanıcı-rol tabloları zaten bulunduğundan yalnızca
-`SuperAdmin` rolü ve endpoint'ler eklenirse migration gerekmez. Yeni kalıcı audit
-alanı veya tablo eklenirse migration ayrıca üretilmelidir.
+ASP.NET Core Identity rol ve kullanıcı-rol tabloları zaten kullanıldı. Eski/yeni rol
+bilgisini kalıcı audit kaydında tutmak için `AddSuperAdminRoleManagement` migration'ı
+`audit_logs.Details` kolonunu ekler.
