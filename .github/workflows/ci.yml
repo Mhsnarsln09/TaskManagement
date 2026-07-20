@@ -1,4 +1,4 @@
-# Restore, build and test in separate steps (docs/tasks/07-testing.md) so a failure
+# Restore, build and test in separate steps (backend/docs/tasks/07-testing.md) so a failure
 # points at the exact phase. Integration tests start their own PostgreSQL containers
 # via Testcontainers, which uses the Docker daemon available on ubuntu runners.
 name: CI
@@ -11,13 +11,16 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          global-json-file: global.json
+          global-json-file: backend/global.json
 
       - name: Restore
         run: dotnet restore

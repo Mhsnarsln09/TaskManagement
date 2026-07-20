@@ -8,7 +8,7 @@ Bu klasör, TaskManagement API'sini geliştirirken izlenecek ürün ve teknik yo
 2. [MVP](MVP.md): İlk yayın kapsamı ve özellikle kapsam dışı bırakılanlar
 3. [Teknik Kararlar](TECHNICAL-DECISIONS.md): Mimari yaklaşım ve gerekçeleri
 4. [Yerel Geliştirme](DEVELOPMENT.md): Secret ve PostgreSQL kurulumu
-5. [Frontend Entegrasyonu](FRONTEND-INTEGRATION.md): Auth, SignalR, CORS ve hata sözleşmesi
+5. [Frontend Entegrasyonu](../../frontend/docs/FRONTEND-INTEGRATION.md): Auth, SignalR, CORS ve hata sözleşmesi
 6. Aşağıdaki görev dosyaları: Uygulama sırası
 
 ## Çalışma yöntemi

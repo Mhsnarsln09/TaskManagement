@@ -1,5 +1,11 @@
 # Yerel Geliştirme Ortamı
 
+Bu dokümandaki komutlar repository kökündeki `backend` klasöründe çalıştırılır:
+
+```bash
+cd backend
+```
+
 ## Configuration ve secret ayrımı
 
 Git'e eklenebilen, hassas olmayan uygulama ayarları `appsettings.json` ve

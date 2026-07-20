@@ -1,5 +1,11 @@
 # Frontend Entegrasyon Sözleşmesi
 
+## İstemci teknolojileri
+
+Frontend Next.js App Router ve TypeScript ile geliştirilecek; stil ve bileşen
+altyapısında Tailwind CSS, shadcn/ui ve Lucide icons kullanılacaktır. Bu belge görsel
+tasarımdan bağımsız olarak backend ile entegrasyonun teknik sözleşmesidir.
+
 ## Yerel adresler
 
 - API: `http://localhost:8080`
@@ -64,6 +70,6 @@ yetkisi yetersiz mevcut üyeye `403` döner. Rate limit aşımı `429`dur.
 ## İstemci üretimi
 
 TypeScript tipleri ve API client kodu elle kopyalanmamalıdır. Development API açıkken
-`/openapi/v1.json` sözleşmesinden seçilen frontend aracına göre client üretilmeli;
-üretilen kod ayrı bir klasörde tutulmalı ve backend contract değiştiğinde yeniden
-üretilmelidir.
+`/openapi/v1.json` sözleşmesinden Next.js istemcisi için client üretilmeli; üretilen
+kod ayrı bir klasörde tutulmalı, doğrudan elle düzenlenmemeli ve backend contract
+değiştiğinde yeniden üretilmelidir.

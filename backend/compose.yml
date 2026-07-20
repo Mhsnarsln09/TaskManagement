@@ -1,3 +1,5 @@
+name: taskmanagement
+
 services:
   api:
     build:

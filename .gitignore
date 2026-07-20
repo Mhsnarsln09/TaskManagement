@@ -59,3 +59,10 @@ uploads/
 App_Data/
 
 .obsidian
+
+# Frontend package ve build çıktıları
+node_modules/
+dist/
+.next/
+.nuxt/
+.vite/
