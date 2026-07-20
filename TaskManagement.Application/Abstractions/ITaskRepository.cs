@@ -35,6 +35,10 @@ public interface ITaskRepository
         Guid userId,
         CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<DueTaskReminderCandidate>> ListDueReminderCandidatesAsync(
+        DateOnly dueDate,
+        CancellationToken cancellationToken);
+
     Task<TaskItem?> GetEntityAsync(
         Guid projectId,
         Guid taskId,

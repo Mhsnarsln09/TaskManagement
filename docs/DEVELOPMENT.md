@@ -60,3 +60,17 @@ docker compose down
 
 `docker compose down -v` geliştirme veritabanını tamamen siler ve yalnızca veri
 kaybı bilinçli olarak isteniyorsa kullanılmalıdır.
+
+## Tüm sistemi container ile çalıştırma
+
+`.env` dosyasında `JWT_SIGNING_KEY` en az 32 byte rastgele bir değer olmalıdır.
+
+```bash
+docker compose up -d --build
+docker compose ps
+curl http://localhost:${API_PORT:-8080}/health/ready
+```
+
+Compose API, PostgreSQL ve Redis'i ayağa kaldırır; local kolaylık için migration API
+başlangıcında uygulanır. Production migration ve rollback akışı
+`docs/POST-MVP-OPERATIONS.md` içinde tanımlıdır.

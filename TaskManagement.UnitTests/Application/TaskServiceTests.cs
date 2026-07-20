@@ -20,6 +20,8 @@ public sealed class TaskServiceTests
     private readonly IProjectRepository _projectRepository = Substitute.For<IProjectRepository>();
     private readonly ITaskRepository _taskRepository = Substitute.For<ITaskRepository>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
+    private readonly INotificationService _notificationService = Substitute.For<INotificationService>();
+    private readonly IApplicationCache _cache = Substitute.For<IApplicationCache>();
     private readonly TaskService _service;
     private readonly Guid _projectId = Guid.NewGuid();
     private readonly Guid _callerId = Guid.NewGuid();
@@ -33,7 +35,9 @@ public sealed class TaskServiceTests
             _projectRepository,
             _taskRepository,
             new ProjectAuthorizationService(_projectRepository, _currentUser),
-            new FixedTimeProvider(Now));
+            new FixedTimeProvider(Now),
+            _notificationService,
+            _cache);
     }
 
     [Fact]

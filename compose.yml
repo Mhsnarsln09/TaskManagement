@@ -1,4 +1,28 @@
 services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskmanagement-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      ConnectionStrings__Redis: redis:6379,abortConnect=false
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      Database__MigrateOnStartup: "true"
+      FileStorage__Local__RootPath: /app/App_Data/attachments
+    ports:
+      - "${API_PORT:-8080}:8080"
+    volumes:
+      - taskmanagement-attachments:/app/App_Data/attachments
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   postgres:
     image: postgres:18
     container_name: taskmanagement-postgres
@@ -21,5 +45,20 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:8-alpine
+    container_name: taskmanagement-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - taskmanagement-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 volumes:
   taskmanagement-postgres-data:
+  taskmanagement-redis-data:
+  taskmanagement-attachments:

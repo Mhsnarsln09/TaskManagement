@@ -136,6 +136,24 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
                 cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<DueTaskReminderCandidate>> ListDueReminderCandidatesAsync(
+        DateOnly dueDate,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.TaskItems
+            .AsNoTracking()
+            .Where(task => task.DueDate == dueDate
+                && task.AssigneeUserId != null
+                && task.Status != WorkItemStatus.Completed
+                && task.Status != WorkItemStatus.Cancelled)
+            .Select(task => new DueTaskReminderCandidate(
+                task.Id,
+                task.AssigneeUserId!.Value,
+                task.Title,
+                task.DueDate!.Value))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<TaskItem?> GetEntityAsync(
         Guid projectId,
         Guid taskId,

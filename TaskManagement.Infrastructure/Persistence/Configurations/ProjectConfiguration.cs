@@ -33,7 +33,11 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(project => project.UpdatedAtUtc)
             .HasColumnType("timestamp with time zone");
 
+        builder.Property(project => project.DeletedAtUtc).HasColumnType("timestamp with time zone");
+        builder.Property(project => project.IsDeleted).HasDefaultValue(false);
+
         builder.HasIndex(project => project.OwnerUserId);
+        builder.HasIndex(project => project.IsDeleted);
 
         builder.HasOne<ApplicationUser>()
             .WithMany()

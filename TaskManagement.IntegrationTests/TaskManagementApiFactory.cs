@@ -59,5 +59,7 @@ public sealed class TaskManagementApiFactory : WebApplicationFactory<Program>, I
         builder.UseSetting("ConnectionStrings:DefaultConnection", _postgres.GetConnectionString());
         builder.UseSetting("Jwt:SigningKey", "integration-tests-signing-key-1234567890");
         builder.UseSetting("FileStorage:Local:RootPath", StorageRootPath);
+        builder.UseSetting("BackgroundJobs:Enabled", "false");
+        builder.UseSetting("Database:MigrateOnStartup", "false");
     }
 }

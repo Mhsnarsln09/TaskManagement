@@ -47,10 +47,14 @@ public sealed class TaskItemConfiguration : IEntityTypeConfiguration<TaskItem>
         builder.Property(task => task.UpdatedAtUtc)
             .HasColumnType("timestamp with time zone");
 
+        builder.Property(task => task.DeletedAtUtc).HasColumnType("timestamp with time zone");
+        builder.Property(task => task.IsDeleted).HasDefaultValue(false);
+
         builder.HasIndex(task => task.ProjectId);
         builder.HasIndex(task => task.AssigneeUserId);
         builder.HasIndex(task => task.Status);
         builder.HasIndex(task => task.DueDate);
+        builder.HasIndex(task => new { task.ProjectId, task.Status, task.DueDate });
 
         builder.HasOne<Project>()
             .WithMany()

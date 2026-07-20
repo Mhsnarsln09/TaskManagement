@@ -4,5 +4,6 @@ namespace TaskManagement.Application.Abstractions;
 
 public interface IAccessTokenGenerator
 {
-    AuthResponse CreateToken(UserResponse user);
+    Task<AuthResponse> CreateSessionAsync(UserResponse user, CancellationToken cancellationToken);
+    Task<AuthResponse> RotateAsync(string refreshToken, CancellationToken cancellationToken);
 }

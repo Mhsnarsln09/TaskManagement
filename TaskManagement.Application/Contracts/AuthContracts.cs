@@ -8,9 +8,13 @@ public sealed record RegisterRequest(
 
 public sealed record LoginRequest(string UserNameOrEmail, string Password);
 
+public sealed record RefreshTokenRequest(string RefreshToken);
+
 public sealed record AuthResponse(
     string AccessToken,
     DateTimeOffset ExpiresAtUtc,
+    string RefreshToken,
+    DateTimeOffset RefreshTokenExpiresAtUtc,
     UserResponse User);
 
 public sealed record UserResponse(

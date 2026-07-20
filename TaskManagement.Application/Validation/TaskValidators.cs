@@ -67,11 +67,7 @@ public sealed class TaskListQueryValidator : AbstractValidator<TaskListQuery>
 
     public TaskListQueryValidator()
     {
-        RuleFor(query => query.Page)
-            .GreaterThanOrEqualTo(1);
-
-        RuleFor(query => query.PageSize)
-            .InclusiveBetween(1, 100);
+        this.AddPaginationRules(query => query.Page, query => query.PageSize);
 
         RuleFor(query => query.Status)
             .IsInEnum()

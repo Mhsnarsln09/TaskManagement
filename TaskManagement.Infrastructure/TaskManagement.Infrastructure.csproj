@@ -17,10 +17,62 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.21" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.20.12" />
+    <PackageReference Include="StackExchange.Redis" Version="2.9.25" />
   </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <!-- No .resx files exist in this adapter project. Disabling the empty default
+         glob also keeps Linux container publishes deterministic. -->
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Explicit items avoid a .NET 10 SDK wildcard issue on Docker's overlay
+         filesystem. Keep this list in sync when adding Infrastructure source. -->
+    <Compile Include="DependencyInjection.cs" />
+    <Compile Include="Authentication/JwtOptions.cs" />
+    <Compile Include="Authentication/JwtTokenService.cs" />
+    <Compile Include="Authentication/RefreshToken.cs" />
+    <Compile Include="BackgroundJobs/DueDateReminderJob.cs" />
+    <Compile Include="Caching/NoOpApplicationCache.cs" />
+    <Compile Include="Caching/RedisApplicationCache.cs" />
+    <Compile Include="Email/LoggingEmailSender.cs" />
+    <Compile Include="Files/BasicFileScanner.cs" />
+    <Compile Include="Files/LocalFileStorage.cs" />
+    <Compile Include="Files/LocalFileStorageOptions.cs" />
+    <Compile Include="Identity/ApplicationUser.cs" />
+    <Compile Include="Identity/IdentityRoleSeeder.cs" />
+    <Compile Include="Identity/IdentityService.cs" />
+    <Compile Include="Persistence/ApplicationDbContext.cs" />
+    <Compile Include="Persistence/ApplicationDbContextFactory.cs" />
+    <Compile Include="Persistence/AuditLog.cs" />
+    <Compile Include="Persistence/Configurations/ApplicationUserConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/AttachmentConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/AuditLogConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/CommentConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/NotificationConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/ProjectConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/ProjectMemberConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/RefreshTokenConfiguration.cs" />
+    <Compile Include="Persistence/Configurations/TaskItemConfiguration.cs" />
+    <Compile Include="Persistence/Migrations/20260714122954_InitialCreate.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260714122954_InitialCreate.cs" />
+    <Compile Include="Persistence/Migrations/20260717114236_AddXminConcurrencyTokens.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260717114236_AddXminConcurrencyTokens.cs" />
+    <Compile Include="Persistence/Migrations/20260720073900_AddAttachments.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260720073900_AddAttachments.cs" />
+    <Compile Include="Persistence/Migrations/20260720104648_AddPostMvpFeatures.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260720104648_AddPostMvpFeatures.cs" />
+    <Compile Include="Persistence/Migrations/ApplicationDbContextModelSnapshot.cs" />
+    <Compile Include="Repositories/AttachmentRepository.cs" />
+    <Compile Include="Repositories/CommentRepository.cs" />
+    <Compile Include="Repositories/NotificationRepository.cs" />
+    <Compile Include="Repositories/ProjectRepository.cs" />
+    <Compile Include="Repositories/TaskRepository.cs" />
+  </ItemGroup>
 
 </Project>

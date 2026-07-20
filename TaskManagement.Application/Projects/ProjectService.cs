@@ -58,7 +58,7 @@ public sealed class ProjectService(
         await projectAuthorization.EnsureCanManageAsync(id, cancellationToken);
         Project project = await GetProjectEntityAsync(id, cancellationToken);
 
-        projectRepository.Remove(project);
+        project.SoftDelete();
         await projectRepository.SaveChangesAsync(cancellationToken);
     }
 

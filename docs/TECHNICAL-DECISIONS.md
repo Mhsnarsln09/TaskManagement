@@ -139,7 +139,11 @@ Beklenen iş hataları ile beklenmeyen sistem hatalarının farkı görüldükte
 
 ### Redis, Hangfire ve SignalR
 
-Ölçülmüş bir cache, zamanlanmış iş veya gerçek zaman ihtiyacı ortaya çıktıktan sonra eklenir. Önce doğruluk, sonra performans ve operasyonel karmaşıklık gelir.
+Görev 08 ile somut ihtiyaçlar oluştu: proje istatistiği kısa süreli Redis cache'i,
+son tarih reminder'ı için Hangfire ve kalıcı bildirimin hızlı teslimatı için SignalR
+eklendi. Bunların tamamı Application portları arkasındadır. Redis kapalıyken no-op
+cache kullanılır; SignalR hatası kalıcı işlemi bozmaz; Hangfire job'ı idempotency
+anahtarıyla tekrar çalıştırılabilir.
 
 ## Veri modelleme ilkeleri
 

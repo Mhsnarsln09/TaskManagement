@@ -19,10 +19,6 @@ public sealed class CommentListQueryValidator : AbstractValidator<CommentListQue
 {
     public CommentListQueryValidator()
     {
-        RuleFor(query => query.Page)
-            .GreaterThanOrEqualTo(1);
-
-        RuleFor(query => query.PageSize)
-            .InclusiveBetween(1, 100);
+        this.AddPaginationRules(query => query.Page, query => query.PageSize);
     }
 }

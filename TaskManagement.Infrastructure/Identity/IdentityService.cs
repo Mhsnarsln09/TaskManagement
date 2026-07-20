@@ -51,6 +51,21 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager) : 
         return await userManager.FindByIdAsync(userId.ToString()) is not null;
     }
 
+    public Task<string?> GetEmailAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        return userManager.Users
+            .AsNoTracking()
+            .Where(user => user.Id == userId)
+            .Select(user => user.Email)
+            .SingleOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<UserResponse?> GetUserAsync(Guid userId, CancellationToken cancellationToken)
+    {
+        ApplicationUser? user = await userManager.Users.SingleOrDefaultAsync(x => x.Id == userId, cancellationToken);
+        return user is null ? null : await MapAsync(user);
+    }
+
     public async Task<IReadOnlyDictionary<Guid, UserSummaryResponse>> GetUserSummariesAsync(
         IReadOnlyCollection<Guid> userIds,
         CancellationToken cancellationToken)

@@ -2,7 +2,7 @@ using TaskManagement.Domain.Common;
 
 namespace TaskManagement.Domain.Projects;
 
-public sealed class Project : Entity
+public sealed class Project : SoftDeletableEntity
 {
     private readonly List<ProjectMember> _members = [];
 

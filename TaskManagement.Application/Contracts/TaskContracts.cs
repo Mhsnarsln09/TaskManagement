@@ -37,3 +37,9 @@ public sealed record TaskResponse(
     bool IsOverdue,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? UpdatedAtUtc);
+
+public sealed record DueTaskReminderCandidate(
+    Guid TaskItemId,
+    Guid AssigneeUserId,
+    string Title,
+    DateOnly DueDate);

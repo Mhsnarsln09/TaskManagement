@@ -11,7 +11,7 @@ public sealed class AuthService(
     public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
     {
         UserResponse user = await identityService.RegisterAsync(request, ApplicationRoles.Member);
-        return accessTokenGenerator.CreateToken(user);
+        return await accessTokenGenerator.CreateSessionAsync(user, CancellationToken.None);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
@@ -25,6 +25,9 @@ public sealed class AuthService(
             throw new UnauthorizedException("Invalid username/email or password.");
         }
 
-        return accessTokenGenerator.CreateToken(user);
+        return await accessTokenGenerator.CreateSessionAsync(user, CancellationToken.None);
     }
+
+    public Task<AuthResponse> RefreshAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
+        => accessTokenGenerator.RotateAsync(request.RefreshToken, cancellationToken);
 }

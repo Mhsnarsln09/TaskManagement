@@ -3,6 +3,7 @@ using TaskManagement.Application.Authorization;
 using TaskManagement.Application.Contracts;
 using TaskManagement.Application.Errors;
 using TaskManagement.Domain.Tasks;
+using TaskManagement.Application.Notifications;
 
 namespace TaskManagement.Application.Tasks;
 
@@ -10,7 +11,9 @@ public sealed class TaskService(
     IProjectRepository projectRepository,
     ITaskRepository taskRepository,
     ProjectAuthorizationService projectAuthorization,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    INotificationService notificationService,
+    IApplicationCache cache)
 {
     public async Task<TaskResponse> CreateAsync(
         Guid projectId,
@@ -31,6 +34,13 @@ public sealed class TaskService(
 
         await taskRepository.AddAsync(task, cancellationToken);
         await taskRepository.SaveChangesAsync(cancellationToken);
+        await cache.RemoveAsync(StatisticsCacheKey(projectId), cancellationToken);
+
+        if (task.AssigneeUserId is Guid assigneeUserId)
+        {
+            await notificationService.TaskAssignedAsync(
+                task.Id, assigneeUserId, task.Title, cancellationToken);
+        }
 
         return Map(task);
     }
@@ -62,6 +72,8 @@ public sealed class TaskService(
         await EnsureAssigneeIsMemberAsync(projectId, request.AssigneeUserId, cancellationToken);
 
         TaskItem task = await GetTaskEntityAsync(projectId, taskId, cancellationToken);
+        Guid? previousAssignee = task.AssigneeUserId;
+        WorkItemStatus previousStatus = task.Status;
 
         // Reopen policy: a completed task can only be changed after it is explicitly
         // reopened by requesting the InProgress status. Any other edit attempt on a
@@ -79,6 +91,19 @@ public sealed class TaskService(
         ApplyStatus(task, request.Status);
 
         await taskRepository.SaveChangesAsync(cancellationToken);
+        await cache.RemoveAsync(StatisticsCacheKey(projectId), cancellationToken);
+
+        if (task.AssigneeUserId is Guid assigneeUserId && assigneeUserId != previousAssignee)
+        {
+            await notificationService.TaskAssignedAsync(task.Id, assigneeUserId, task.Title, cancellationToken);
+        }
+
+        if (task.AssigneeUserId is Guid statusRecipient && task.Status != previousStatus)
+        {
+            await notificationService.TaskStatusChangedAsync(
+                task.Id, statusRecipient, task.Title, task.Status.ToString(), cancellationToken);
+        }
+
         return Map(task);
     }
 
@@ -88,8 +113,9 @@ public sealed class TaskService(
         await projectAuthorization.EnsureCanDeleteTasksAsync(projectId, cancellationToken);
 
         TaskItem task = await GetTaskEntityAsync(projectId, taskId, cancellationToken);
-        taskRepository.Remove(task);
+        task.SoftDelete();
         await taskRepository.SaveChangesAsync(cancellationToken);
+        await cache.RemoveAsync(StatisticsCacheKey(projectId), cancellationToken);
     }
 
     private async Task EnsureAssigneeIsMemberAsync(
@@ -158,6 +184,8 @@ public sealed class TaskService(
     {
         return DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
     }
+
+    private static string StatisticsCacheKey(Guid projectId) => $"project-statistics:{projectId}";
 
     private TaskResponse Map(TaskItem task)
     {

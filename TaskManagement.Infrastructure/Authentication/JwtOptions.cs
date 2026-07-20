@@ -12,5 +12,7 @@ public sealed class JwtOptions
 
     public int ExpiryMinutes { get; init; } = 60;
 
+    public int RefreshTokenExpiryDays { get; init; } = 14;
+
     public int ClockSkewSeconds { get; init; } = 30;
 }

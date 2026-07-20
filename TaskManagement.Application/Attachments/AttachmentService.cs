@@ -11,6 +11,7 @@ namespace TaskManagement.Application.Attachments;
 public sealed class AttachmentService(
     IAttachmentRepository attachmentRepository,
     IFileStorage fileStorage,
+    IFileScanner fileScanner,
     IIdentityService identityService,
     TaskAccessGuard taskAccess,
     ICurrentUser currentUser,
@@ -41,7 +42,19 @@ public sealed class AttachmentService(
             contentType,
             upload.SizeInBytes);
 
-        await fileStorage.SaveAsync(storedFileName, upload.Content, cancellationToken);
+        await using var bufferedContent = new MemoryStream();
+        await upload.Content.CopyToAsync(bufferedContent, cancellationToken);
+        bufferedContent.Position = 0;
+        if (!await fileScanner.IsSafeAsync(bufferedContent, cancellationToken))
+        {
+            throw new ValidationProblemException(new Dictionary<string, string[]>
+            {
+                ["file"] = ["File failed the malware scan."]
+            });
+        }
+
+        bufferedContent.Position = 0;
+        await fileStorage.SaveAsync(storedFileName, bufferedContent, cancellationToken);
 
         try
         {

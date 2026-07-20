@@ -29,4 +29,15 @@ public sealed class AuthController(AuthService authService) : ControllerBase
         AuthResponse response = await authService.LoginAsync(request);
         return Ok(response);
     }
+
+    [HttpPost("refresh")]
+    [ProducesResponseType<AuthResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AuthResponse>> Refresh(
+        RefreshTokenRequest request,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await authService.RefreshAsync(request, cancellationToken));
+    }
 }

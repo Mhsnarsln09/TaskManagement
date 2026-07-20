@@ -2,7 +2,7 @@ using TaskManagement.Domain.Common;
 
 namespace TaskManagement.Domain.Tasks;
 
-public sealed class TaskItem : Entity
+public sealed class TaskItem : SoftDeletableEntity
 {
     public TaskItem(
         Guid id,
