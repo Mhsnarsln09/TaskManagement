@@ -12,8 +12,13 @@ tek doğruluk kaynağı kabul eder.
 - **ProjectManager:** Proje oluşturur, düzenler, üyeleri ve görevleri yönetir.
 - **Member:** Üyesi olduğu projeleri ve görevleri görür; izin verilen görevleri
   günceller, yorum ve ek dosya paylaşır.
-- **Admin:** Sistem rolüne bağlı mevcut backend yetkilerinden yararlanır. MVP'de
-  ayrıca bir kullanıcı yönetim paneli yoktur.
+- **Admin:** Mevcut backend'de proje kaynakları için sistem seviyesi yetkiye sahiptir.
+  MVP'de kullanıcı/rol yönetim paneli yoktur.
+
+Public kayıt sırasında rol seçilmez; `email`, `userName`, `password` ve isteğe bağlı
+`displayName` gönderilir ve backend kullanıcıyı otomatik `Member` yapar. SuperAdmin
+ve rol yönetimi henüz uygulanmamıştır; backend `09-super-admin-role-management`
+görevinin kapsamındadır ve tamamlanana kadar frontend'de gösterilmez.
 
 ## 3. Temel kullanıcı akışları
 
@@ -55,7 +60,7 @@ tek doğruluk kaynağı kabul eder.
 
 ## 7. MVP dışı
 
-- Ayrı admin yönetim paneli
+- SuperAdmin ve kullanıcı/rol yönetim paneli (backend görevi tamamlanana kadar)
 - Takvim ve Gantt görünümü
 - Sürükle-bırak Kanban
 - Genel kullanıcı arama API'si gerektiren üye keşfi

@@ -5,6 +5,7 @@
 ### Kimlik doğrulama
 
 - Kayıt, giriş, çıkış ve oturum yenileme
+- Kayıtta yalnızca e-posta, kullanıcı adı, isteğe bağlı görünen ad ve şifre; rol seçimi yok
 - Korunan rotalar ve oturum süresi dolduğunda kontrollü yönlendirme
 - Form doğrulama ve Problem Details validation mesajları
 

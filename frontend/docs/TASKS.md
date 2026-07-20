@@ -6,6 +6,7 @@
 - [ ] Masaüstü ve mobil varyantları netleştir
 - [ ] Loading, empty, error, permission ve confirmation durumlarını tamamla
 - [ ] Tasarım tokenlarını ve kullanılacak shadcn bileşenlerini çıkar
+- [ ] Her ekranı backend request/response alanlarıyla karşılaştır; sözleşmede olmayan kontrolü kaldır
 
 ## 01 - Temel kurulum
 
@@ -13,6 +14,7 @@
 - [ ] Tailwind CSS, shadcn/ui ve Lucide icons yapılandır
 - [ ] ESLint, formatter, test ve environment doğrulamasını ekle
 - [ ] Route grupları, layout'lar ve feature tabanlı klasör yapısını kur
+- [ ] Önce ortak UI primitive ve composite componentleri oluştur; feature ekranlarında bunları kullan
 
 ## 02 - API altyapısı
 

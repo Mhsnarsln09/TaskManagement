@@ -24,6 +24,11 @@ birlikte kullanılmaz.
 token bitiş zamanı, refresh token, refresh token bitiş zamanı ve kullanıcı özetini
 döndürür. API çağrılarında:
 
+Register request yalnızca `email`, `userName`, `password` ve nullable `displayName`
+alanlarını kabul eder. **Rol alanı yoktur ve kayıt ekranında rol seçimi
+gösterilmemelidir.** Backend her yeni kullanıcıyı otomatik `Member` yapar. Mevcut
+API'de kullanıcı/rol yönetimi veya SuperAdmin endpoint'i yoktur.
+
 ```http
 Authorization: Bearer ACCESS_TOKEN
 ```
