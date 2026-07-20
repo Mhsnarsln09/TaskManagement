@@ -3,6 +3,8 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <!-- IOptions only; binding to configuration stays in the composition root. -->
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -12,5 +14,11 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UploadFileName is an internal security helper; its edge cases deserve direct
+         unit tests without widening the public surface of the layer. -->
+    <InternalsVisibleTo Include="TaskManagement.UnitTests" />
+  </ItemGroup>
 
 </Project>

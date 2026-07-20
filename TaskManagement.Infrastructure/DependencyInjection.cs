@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TaskManagement.Application.Abstractions;
+using TaskManagement.Application.Files;
 using TaskManagement.Infrastructure.Authentication;
+using TaskManagement.Infrastructure.Files;
 using TaskManagement.Infrastructure.Identity;
 using TaskManagement.Infrastructure.Persistence;
 using TaskManagement.Infrastructure.Repositories;
@@ -38,10 +40,20 @@ public static class DependencyInjection
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
+        services.Configure<FileUploadOptions>(configuration.GetSection(FileUploadOptions.SectionName));
+        services.Configure<LocalFileStorageOptions>(
+            configuration.GetSection(LocalFileStorageOptions.SectionName));
+
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<ITaskRepository, TaskRepository>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<IAttachmentRepository, AttachmentRepository>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IAccessTokenGenerator, JwtTokenService>();
+
+        // Stateless and holding only a resolved root path, so a singleton avoids
+        // re-creating the directory on every request.
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
 
         return services;
     }

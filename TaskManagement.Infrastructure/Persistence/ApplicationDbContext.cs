@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TaskManagement.Domain.Attachments;
 using TaskManagement.Domain.Comments;
 using TaskManagement.Domain.Projects;
 using TaskManagement.Domain.Tasks;
@@ -24,18 +25,18 @@ public sealed class ApplicationDbContext
 
     public DbSet<Comment> Comments => Set<Comment>();
 
+    public DbSet<Attachment> Attachments => Set<Attachment>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        // "xmin" is a PostgreSQL system column; other providers (e.g. Sqlite in tests)
-        // must not map it, so the concurrency token is configured per provider here.
-        if (Database.IsNpgsql())
-        {
-            builder.Entity<Project>().Property<uint>("xmin").IsRowVersion();
-            builder.Entity<TaskItem>().Property<uint>("xmin").IsRowVersion();
-        }
+        // "xmin" is a PostgreSQL system column mapped as the optimistic concurrency
+        // token. Integration tests run on real PostgreSQL (Testcontainers), so no
+        // other provider needs to be accommodated here.
+        builder.Entity<Project>().Property<uint>("xmin").IsRowVersion();
+        builder.Entity<TaskItem>().Property<uint>("xmin").IsRowVersion();
     }
 }

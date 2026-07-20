@@ -19,6 +19,17 @@ public interface ITaskRepository
         DateOnly today,
         CancellationToken cancellationToken);
 
+    Task<bool> ExistsAsync(
+        Guid projectId,
+        Guid taskId,
+        CancellationToken cancellationToken);
+
+    // Single projection over the project's tasks; see ProjectTaskCounts.
+    Task<ProjectTaskCounts> GetCountsAsync(
+        Guid projectId,
+        DateOnly today,
+        CancellationToken cancellationToken);
+
     Task<bool> HasOpenTasksAssignedToUserAsync(
         Guid projectId,
         Guid userId,

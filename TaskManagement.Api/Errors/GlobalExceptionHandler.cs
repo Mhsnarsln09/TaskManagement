@@ -68,15 +68,7 @@ public sealed class GlobalExceptionHandler(
 
     private static bool IsUniqueConstraintViolation(DbUpdateException exception)
     {
-        return exception.InnerException switch
-        {
-            PostgresException postgresException =>
-                postgresException.SqlState == PostgresErrorCodes.UniqueViolation,
-            // The Sqlite provider (integration tests) is not referenced by the Api
-            // project, so its unique violation is detected by message.
-            { } innerException =>
-                innerException.Message.Contains("UNIQUE constraint failed", StringComparison.Ordinal),
-            null => false
-        };
+        return exception.InnerException is PostgresException postgresException
+            && postgresException.SqlState == PostgresErrorCodes.UniqueViolation;
     }
 }

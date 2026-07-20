@@ -56,5 +56,6 @@ appsettings.*.local.json
 
 # Uygulamanın geliştirme ortamında üreteceği dosyalar
 uploads/
+App_Data/
 
 .obsidian

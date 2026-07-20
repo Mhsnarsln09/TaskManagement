@@ -206,6 +206,80 @@ Cancelled  -> (terminal)
 - **Yeniden açma politikası:** Tamamlanmış görev yalnızca status `InProgress` istenerek yeniden açılabilir (`TaskItem.Reopen`); bunun dışındaki her düzenleme domain tarafından 409 ile reddedilir.
 - Geçersiz geçişler `DomainException`/`ConflictException` ile 409 döner.
 
+## Yorum, dosya ve istatistik (Görev 06)
+
+### Görev alt kaynakları ve TaskAccessGuard
+
+Yorum ve dosya endpoint'leri proje route'u altındadır
+(`/api/projects/{projectId}/tasks/{taskId}/...`). Her istek iki kontrolü birlikte
+geçer: çağıran proje üyesi olmalı **ve** görev gerçekten o projeye ait olmalı. İkinci
+kontrol olmadan, A projesinin üyesi kendi proje id'sini yabancı bir görev id'siyle
+eşleştirip B projesindeki görevin yorumlarını okuyabilirdi. Bu iki kontrol
+`TaskAccessGuard` içinde toplanır; her iki başarısızlık da 404 sözleşmesine uyar.
+
+Yorum yazarı her zaman token'daki aktif kullanıcıdır; istekten yazar id'si alınmaz.
+Response'taki yazar/yükleyen bilgisi `UserSummaryResponse` ile sınırlıdır (id,
+userName, displayName) — e-posta ve roller bilinçli olarak dışarıda tutulur. Yorum
+düzenleme/silme MVP kapsamı dışıdır; endpoint yoktur (kimin kimin yorumunu
+düzenleyebileceği ve geçmişin tutulup tutulmayacağı ayrı bir karardır).
+
+### Dosya yükleme güvenliği
+
+- İstemci dosya adı yalnızca görüntüleme içindir. Fiziksel ad her zaman sunucuda
+  üretilir (`{Guid:N}{uzantı}`); path traversal filtreyle değil yapısal olarak
+  engellenir.
+- `UploadFileName` istemci adını tek path segmentine indirger: `/`, `\`, `:` sonrası
+  alınır, kontrol karakterleri (NUL dahil) atılır, 255 karakter sınırı uygulanır.
+- Uzantı ve content-type allow-list'i configuration'dadır (`FileUpload` bölümü);
+  bilinmeyen tür varsayılan olarak reddedilir. Boş dosya ve boyut aşımı 400 döner;
+  boyut sınırı ayrıca `MultipartBodyLengthLimit` ile transport seviyesinde de uygulanır.
+- İstemcinin beyan ettiği content-type kanıt değildir; asıl savunma indirme tarafında:
+  içerik her zaman `Content-Disposition: attachment` + `X-Content-Type-Options:
+  nosniff` ile döner, böylece yanlış etiketli dosya API origin'inde çalıştırılamaz.
+- Depolama `IFileStorage` port'u arkasındadır; ilk implementasyon yerel disktir
+  (`FileStorage:Local:RootPath`). `LocalFileStorage` stored name'i kendi başına da
+  doğrular ve çözülen yolun depolama kökü içinde kaldığını denetler.
+- Tutarlılık: önce dosya yazılır, sonra metadata kaydedilir. Metadata kaydı
+  başarısız olursa fiziksel dosya silinmeye çalışılır (öksüz dosya, indirilemeyen
+  metadata'dan daha ehven). `StoredFileName` unique index'i bir fiziksel dosyanın tek
+  bir metadata satırına ait olmasını garanti eder.
+
+### İstatistik
+
+Tüm sayımlar (`Total`, `Todo`, `InProgress`, `Completed`, `Cancelled`, `Overdue`) tek
+bir `GroupBy` projection'ıyla tek sorguda hesaplanır. Boş proje sıfır satır ürettiği
+için null sonuç sıfırlara map edilir; tamamlanma yüzdesi boş projede 0 döner (sıfıra
+bölme yok). İptal edilen görevler paydada kalır, böylece görev iptal etmek ilerlemeyi
+şişirmez. Endpoint tüm proje üyelerine açıktır; üye olmayan 404 alır.
+
+## Test stratejisi
+
+### Mock kütüphanesi: NSubstitute
+
+Unit testlerde tek mock kütüphanesi olarak NSubstitute kullanılır (Moq değil); iki
+kütüphanenin karışması yasak. Mock'lar yalnızca Application katmanının port'ları
+(`IProjectRepository`, `ITaskRepository`, `ICurrentUser`) için kullanılır; domain
+entity'leri ve `ProjectAuthorizationService` gibi saf application servisleri gerçek
+halleriyle test edilir, böylece implementasyon ayrıntısı değil davranış sınanır.
+
+### Integration testler gerçek PostgreSQL üzerinde (Testcontainers)
+
+Integration testler daha önce in-memory Sqlite kullanıyordu; bu, provider'a özel
+workaround'lar gerektiriyordu (`DateTimeOffsetToBinaryConverter`, exception
+handler'da mesaj tabanlı unique-violation tespiti) ve ilişkisel davranışı
+kanıtlamıyordu. Testler artık Testcontainers ile compose.yml'dekiyle aynı imajdan
+(`postgres:18`) gerçek bir PostgreSQL container'ı başlatır ve şemayı
+`Database.MigrateAsync()` ile gerçek migration'lardan kurar. Böylece `xmin`
+concurrency token'ı, unique index ihlallerinin `PostgresException` üzerinden 409'a
+map'lenmesi ve `timestamp with time zone` sıralaması üretimdekiyle aynı yolda test
+edilir; Sqlite'a özel tüm kod yolları silindi.
+
+İzolasyon stratejisi: her test sınıfı `IClassFixture<TaskManagementApiFactory>` ile
+kendi factory'sini, dolayısıyla kendi container'ını ve taze migrate edilmiş
+veritabanını alır. Testler kendi kullanıcılarını/projelerini benzersiz adlarla
+oluşturur; ortak sıraya veya önceden var olan veriye bağımlılık yoktur ve xUnit'in
+sınıflar arası paralel koşusu güvenlidir.
+
 ## Zaman bağımlı kurallar
 
 Gecikme bilgisi `DueDate < UtcNow (bugün) && Status != Completed && Status != Cancelled` olarak hesaplanır ve `TaskResponse.IsOverdue` alanında döner. Sistem saati doğrudan okunmaz; `TimeProvider` DI üzerinden enjekte edilir (`TimeProvider.System` kayıtlıdır) ve testlerde sahte saat ile değiştirilebilir.

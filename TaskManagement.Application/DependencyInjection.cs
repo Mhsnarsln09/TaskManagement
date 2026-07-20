@@ -1,9 +1,12 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using TaskManagement.Application.Attachments;
 using TaskManagement.Application.Authentication;
 using TaskManagement.Application.Authorization;
+using TaskManagement.Application.Comments;
 using TaskManagement.Application.Contracts;
 using TaskManagement.Application.Projects;
+using TaskManagement.Application.Statistics;
 using TaskManagement.Application.Tasks;
 using TaskManagement.Application.Validation;
 
@@ -21,10 +24,16 @@ public static class DependencyInjection
         services.AddScoped<IValidator<TaskListQuery>, TaskListQueryValidator>();
         services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
         services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
+        services.AddScoped<IValidator<CreateCommentRequest>, CreateCommentRequestValidator>();
+        services.AddScoped<IValidator<CommentListQuery>, CommentListQueryValidator>();
         services.AddScoped<AuthService>();
         services.AddScoped<ProjectAuthorizationService>();
         services.AddScoped<ProjectService>();
         services.AddScoped<TaskService>();
+        services.AddScoped<TaskAccessGuard>();
+        services.AddScoped<CommentService>();
+        services.AddScoped<AttachmentService>();
+        services.AddScoped<StatisticsService>();
 
         // Time-dependent rules (overdue calculation) must not read the system clock
         // directly so tests can substitute a fake TimeProvider.

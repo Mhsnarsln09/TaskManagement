@@ -1,11 +1,13 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
 using TaskManagement.Application;
 using TaskManagement.Application.Abstractions;
+using TaskManagement.Application.Files;
 using TaskManagement.Api.Errors;
 using TaskManagement.Api.OpenApi;
 using TaskManagement.Api.Security;
@@ -24,6 +26,17 @@ builder.Services
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+// Stops an oversized upload at the transport layer instead of buffering it only to
+// have AttachmentService reject it. The headroom covers multipart boundary overhead
+// so a file exactly on the limit still reaches the application-level check and gets a
+// 400 with a readable message rather than a bare 413.
+long maxUploadSizeInBytes = builder.Configuration
+    .GetValue<long?>($"{FileUploadOptions.SectionName}:MaxSizeInBytes")
+    ?? new FileUploadOptions().MaxSizeInBytes;
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = maxUploadSizeInBytes + 8 * 1024;
+});
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHttpContextAccessor();

@@ -87,6 +87,40 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
             .SingleOrDefaultAsync(cancellationToken);
     }
 
+    public Task<bool> ExistsAsync(Guid projectId, Guid taskId, CancellationToken cancellationToken)
+    {
+        return dbContext.TaskItems
+            .AsNoTracking()
+            .AnyAsync(task => task.ProjectId == projectId && task.Id == taskId, cancellationToken);
+    }
+
+    // GroupBy over a constant collapses every count into one aggregate query instead
+    // of six round trips. An empty project produces no group at all, which is why the
+    // null result maps to zeroes rather than being treated as "project missing".
+    public async Task<ProjectTaskCounts> GetCountsAsync(
+        Guid projectId,
+        DateOnly today,
+        CancellationToken cancellationToken)
+    {
+        ProjectTaskCounts? counts = await dbContext.TaskItems
+            .AsNoTracking()
+            .Where(task => task.ProjectId == projectId)
+            .GroupBy(_ => 1)
+            .Select(group => new ProjectTaskCounts(
+                group.Count(),
+                group.Count(task => task.Status == WorkItemStatus.Todo),
+                group.Count(task => task.Status == WorkItemStatus.InProgress),
+                group.Count(task => task.Status == WorkItemStatus.Completed),
+                group.Count(task => task.Status == WorkItemStatus.Cancelled),
+                group.Count(task => task.DueDate != null
+                    && task.DueDate < today
+                    && task.Status != WorkItemStatus.Completed
+                    && task.Status != WorkItemStatus.Cancelled)))
+            .SingleOrDefaultAsync(cancellationToken);
+
+        return counts ?? new ProjectTaskCounts(0, 0, 0, 0, 0, 0);
+    }
+
     public Task<bool> HasOpenTasksAssignedToUserAsync(
         Guid projectId,
         Guid userId,

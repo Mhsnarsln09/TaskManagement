@@ -1,4 +1,6 @@
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using TaskManagement.Application.Abstractions;
 using TaskManagement.Application.Contracts;
 using TaskManagement.Application.Errors;
@@ -47,6 +49,27 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager) : 
     public async Task<bool> UserExistsAsync(Guid userId)
     {
         return await userManager.FindByIdAsync(userId.ToString()) is not null;
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, UserSummaryResponse>> GetUserSummariesAsync(
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken cancellationToken)
+    {
+        if (userIds.Count == 0)
+        {
+            return ReadOnlyDictionary<Guid, UserSummaryResponse>.Empty;
+        }
+
+        // Roles are not loaded here: the summary is deliberately limited to the
+        // fields that are safe to show to any project member.
+        return await userManager.Users
+            .AsNoTracking()
+            .Where(user => userIds.Contains(user.Id))
+            .Select(user => new UserSummaryResponse(
+                user.Id,
+                user.UserName ?? string.Empty,
+                user.DisplayName))
+            .ToDictionaryAsync(summary => summary.Id, cancellationToken);
     }
 
     private async Task<UserResponse> MapAsync(ApplicationUser user)

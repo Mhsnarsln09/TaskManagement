@@ -12,26 +12,26 @@ Yorumlar bağlamı, dosyalar iş çıktısını, istatistikler ise ilerleme bilg
 
 ### Yorum
 
-- [ ] Proje üyesinin göreve yorum eklemesini sağla.
-- [ ] Yorumları oluşturma tarihine göre sayfalı listele.
-- [ ] Yazar bilgisinin güvenli özetini response'a ekle.
-- [ ] Yorum düzenleme/silme MVP kapsamını netleştir; yoksa endpoint ekleme.
+- [x] Proje üyesinin göreve yorum eklemesini sağla.
+- [x] Yorumları oluşturma tarihine göre sayfalı listele.
+- [x] Yazar bilgisinin güvenli özetini response'a ekle (`UserSummaryResponse`: id, userName, displayName).
+- [x] Yorum düzenleme/silme MVP kapsamını netleştir; yoksa endpoint ekleme. (Karar: MVP dışı, endpoint yok — bkz. TECHNICAL-DECISIONS.md.)
 
 ### Dosya
 
-- [ ] `Attachment` entity/metadata modelini ekle ve migration üret.
-- [ ] İzin verilen maksimum boyut ve uzantıları configuration'a taşı.
-- [ ] İstemci dosya adını fiziksel dosya adı olarak kullanma; rastgele isim üret.
-- [ ] Path traversal, MIME/uzantı ve boş dosya kontrollerini uygula.
-- [ ] Depolama davranışını `IFileStorage` arayüzü arkasına al; ilk implementasyon yerel olabilir.
-- [ ] Dosya metadata kaydı ile fiziksel yazma başarısızlıklarının tutarlılığını ele al.
-- [ ] Yetkili indirme endpoint'i oluştur.
+- [x] `Attachment` entity/metadata modelini ekle ve migration üret (`AddAttachments`).
+- [x] İzin verilen maksimum boyut ve uzantıları configuration'a taşı (`FileUpload` bölümü).
+- [x] İstemci dosya adını fiziksel dosya adı olarak kullanma; rastgele isim üret (`{Guid:N}{uzantı}`).
+- [x] Path traversal, MIME/uzantı ve boş dosya kontrollerini uygula (`UploadFileName` + `AttachmentService.ValidateUpload`).
+- [x] Depolama davranışını `IFileStorage` arayüzü arkasına al; ilk implementasyon yerel (`LocalFileStorage`).
+- [x] Dosya metadata kaydı ile fiziksel yazma başarısızlıklarının tutarlılığını ele al (önce dosya, sonra metadata; başarısızlıkta kompanzasyon silmesi).
+- [x] Yetkili indirme endpoint'i oluştur (`GET .../attachments/{id}/content`, attachment + nosniff).
 
 ### İstatistik
 
-- [ ] Toplam, Todo, InProgress, Completed ve overdue sayılarını tek projection/query ile hesaplamayı değerlendir.
-- [ ] Tamamlanma yüzdesinde sıfıra bölmeyi yönet.
-- [ ] İstatistik endpoint'ini yalnızca proje üyelerine aç.
+- [x] Toplam, Todo, InProgress, Completed ve overdue sayılarını tek projection/query ile hesapla (`TaskRepository.GetCountsAsync`).
+- [x] Tamamlanma yüzdesinde sıfıra bölmeyi yönet (boş proje %0).
+- [x] İstatistik endpoint'ini yalnızca proje üyelerine aç (üye olmayana 404).
 
 ## Kabul kriterleri
 

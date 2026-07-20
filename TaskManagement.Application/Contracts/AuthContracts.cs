@@ -19,3 +19,10 @@ public sealed record UserResponse(
     string UserName,
     string? DisplayName,
     IReadOnlyCollection<string> Roles);
+
+// Safe public projection of a user: no e-mail and no roles, so embedding an author
+// or uploader in another resource cannot leak account details to project members.
+public sealed record UserSummaryResponse(
+    Guid Id,
+    string UserName,
+    string? DisplayName);

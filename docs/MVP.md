@@ -79,17 +79,23 @@ DELETE /api/projects/{projectId}/members/{userId}
 
 GET    /api/projects/{projectId}/tasks
 POST   /api/projects/{projectId}/tasks
-GET    /api/tasks/{taskId}
-PUT    /api/tasks/{taskId}
-PATCH  /api/tasks/{taskId}/status
-DELETE /api/tasks/{taskId}
+GET    /api/projects/{projectId}/tasks/{taskId}
+PUT    /api/projects/{projectId}/tasks/{taskId}
+DELETE /api/projects/{projectId}/tasks/{taskId}
 
-GET    /api/tasks/{taskId}/comments
-POST   /api/tasks/{taskId}/comments
-POST   /api/tasks/{taskId}/attachments
+GET    /api/projects/{projectId}/tasks/{taskId}/comments
+POST   /api/projects/{projectId}/tasks/{taskId}/comments
+
+GET    /api/projects/{projectId}/tasks/{taskId}/attachments
+POST   /api/projects/{projectId}/tasks/{taskId}/attachments
+GET    /api/projects/{projectId}/tasks/{taskId}/attachments/{attachmentId}/content
 
 GET    /api/projects/{projectId}/statistics
 ```
+
+Görev ve alt kaynakları proje route'u altında tutulur: her yetki kontrolü proje
+üyeliğine dayandığı için proje id'si URL'de görünür kalır. Durum güncellemesi ayrı bir
+`PATCH .../status` yerine `PUT` gövdesindeki `status` alanıyla yapılır.
 
 Örnek filtreli istek:
 
