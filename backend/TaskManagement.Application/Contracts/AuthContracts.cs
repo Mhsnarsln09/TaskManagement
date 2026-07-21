@@ -30,3 +30,8 @@ public sealed record UserSummaryResponse(
     Guid Id,
     string UserName,
     string? DisplayName);
+
+// Directory lookup so a project owner can pick a person by name instead of pasting
+// a GUID. Deliberately requires a search term: it is a lookup, not an enumeration
+// endpoint, and it returns the same safe projection as comment authors.
+public sealed record UserSearchQuery(string Search, int Limit = 10);

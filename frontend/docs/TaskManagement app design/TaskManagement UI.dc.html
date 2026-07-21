@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#e9edf1;font-family:Inter,system-ui,sans-serif;color:#0f172a;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#0f766e}a:hover{color:#115e59}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{opacity:.55}50%{opacity:1}100%{opacity:.55}}
+</style>
+</helmet>
+
+<section data-screen-label="00 Tasarım Sistemi" style="display:flex;flex-direction:column;gap:24px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">00 · Tasarım Sistemi</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Tokenlar ve temel bileşenler</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:720px">Tailwind + shadcn/ui eşlemeli tokenlar. Yazı tipi Inter, maksimum kart yarıçapı 8px, kontroller 6px. Tüm ekranlar bu kütüphaneden oluşturulur.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="background:#ffffff;border:1px solid #d8dfe6;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:12px;font-weight:700;color:#334155">Renkler</div>
+      <div style="display:flex;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b">NÖTR (slate)</div>
+          <div style="display:flex;gap:6px">
+            <div style="width:36px;height:36px;border-radius:6px;background:#0f172a" title="metin · slate-900"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#475569" title="ikincil · slate-600"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#94a3b8" title="soluk · slate-400"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#e2e8f0;border:1px solid #cbd5e1" title="kenarlık · slate-200"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#f8fafc;border:1px solid #e2e8f0" title="zemin · slate-50"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b">VURGU (teal)</div>
+          <div style="display:flex;gap:6px">
+            <div style="width:36px;height:36px;border-radius:6px;background:#115e59" title="hover · teal-800"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#0f766e" title="birincil · teal-700"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#e0efec;border:1px solid #cce4df" title="açık zemin"></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b">SEMANTİK (durum + metin/ikon, asla tek başına renk)</div>
+          <div style="display:flex;gap:6px">
+            <div style="width:36px;height:36px;border-radius:6px;background:#dc2626" title="hata/kritik · red-600"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#b45309" title="uyarı/gecikme · amber-700"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#15803d" title="başarı · green-700"></div>
+            <div style="width:36px;height:36px;border-radius:6px;background:#1d4ed8" title="bilgi · blue-700"></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b;line-height:1.6">tipografi: 20/700 sayfa başlığı · 14/600 bölüm · 13/400 gövde · 12/600 etiket · 11.5 mono (ID)<br>spacing: 4·8·12·16·24 — radius: 6 kontrol / 8 kart — gölge: 0 1px 2-3px rgba(15,23,42,.05-.08)</div>
+    </div>
+
+    <div style="background:#ffffff;border:1px solid #d8dfe6;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px;width:400px">
+      <div style="font-size:12px;font-weight:700;color:#334155">Button · Input · FormField</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button style="display:inline-flex;align-items:center;gap:6px;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Birincil</button>
+        <button style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">İkincil</button>
+        <button style="display:inline-flex;align-items:center;gap:6px;background:transparent;color:#475569;border:1px solid transparent;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Ghost</button>
+        <button style="display:inline-flex;align-items:center;gap:6px;background:#dc2626;color:#ffffff;border:1px solid #dc2626;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Tehlikeli</button>
+        <button disabled="{{ true }}" style="display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;font-family:inherit;cursor:not-allowed">Devre dışı</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <label style="font-size:12px;font-weight:600;color:#334155">Varsayılan</label>
+        <input value="Metin girdisi" style="width:100%;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <label style="font-size:12px;font-weight:600;color:#334155">Odak (görünür halka)</label>
+        <input value="Odaklanmış" style="width:100%;padding:7px 10px;border:1px solid #0f766e;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none;box-shadow:0 0 0 3px rgba(15,118,110,0.18)">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <label style="font-size:12px;font-weight:600;color:#334155">Hata</label>
+        <input value="ayse@" aria-invalid="true" style="width:100%;padding:7px 10px;border:1px solid #dc2626;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none;box-shadow:0 0 0 3px rgba(220,38,38,0.10)">
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:#b91c1c">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+          Geçerli bir e-posta adresi girin. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">(aria-describedby + role=alert)</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#ffffff;border:1px solid #d8dfe6;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px;width:380px">
+      <div style="font-size:12px;font-weight:700;color:#334155">StatusBadge · PriorityBadge</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"></circle></svg>Yapılacak</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Devam Ediyor</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f0fdf4;color:#15803d;border:1px solid #dcfce7"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg>Tamamlandı</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 6"></path><path d="m15 9-6 6"></path></svg>İptal</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 10 6 6 6-6"></path></svg>Düşük</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 9h14"></path><path d="M5 15h14"></path></svg>Orta</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#fffbeb;color:#b45309;border:1px solid #fde68a"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14-6-6-6 6"></path></svg>Yüksek</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"></path><path d="m17 18-5-5-5 5"></path></svg>Kritik</span>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#334155;margin-top:4px">UserDisplay · DateDisplay · Progress · Skeleton</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span title="8f3a2c1e-6b0d-4f2a-9e51-7c44a1d09c47" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 7px;color:#475569">Ali Vural</span>
+        <span style="font-size:12.5px;color:#334155" title="2026-07-12T14:32:00Z (UTC/ISO)">12 Tem 2026, 14:32</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#b45309"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>Gecikti</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="flex:1;height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden"><div style="width:29%;height:100%;background:#0f766e;border-radius:3px"></div></div>
+        <span style="font-size:12px;font-weight:600;color:#334155">%29</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="height:12px;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite;width:70%"></div>
+        <div style="height:12px;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite;width:45%"></div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b;line-height:1.6">tümü shadcn: Button/Input/Badge/Progress/Skeleton varyantları. UserDisplay: ad soyad görünür; userId (GUID) title/tooltip'te taşınır. DateDisplay: UTC/ISO saklanır, tr-TR gösterilir.</div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="01 Giriş ve Kayıt" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">01 · Kimlik Doğrulama</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Giriş ve kayıt</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:720px">Giriş: tek "kullanıcı adı veya e-posta" alanı. Kayıt: yalnızca Görünen ad (ops.), Kullanıcı adı, E-posta, Parola — rol seçici yok, backend her zaman Member atar. Parola: min 8, büyük/küçük harf + rakam.</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:400px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">GİRİŞ — VARSAYILAN</div>
+      <div style="background:#f4f6f8;border:1px solid #d3dce4;border-radius:8px;padding:40px 28px;display:flex;justify-content:center">
+        <div style="width:100%;background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(15,23,42,0.05)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:24px;height:24px;border-radius:6px;background:#0f766e;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></div>
+            <span style="font-size:15px;font-weight:700">TaskManagement</span>
+          </div>
+          <div>
+            <div style="font-size:17px;font-weight:700">Oturum aç</div>
+            <div style="font-size:12.5px;color:#64748b;margin-top:2px">Projelerinize devam edin</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Kullanıcı adı veya e-posta</label>
+            <input placeholder="aysedemir veya ayse@ornek.com" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Parola</label>
+            <div style="position:relative">
+              <input type="password" value="••••••••••" style="width:100%;padding:8px 34px 8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none">
+              <button aria-label="Parolayı göster" title="Parolayı göster" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);border:none;background:transparent;padding:6px;cursor:pointer;display:flex;border-radius:6px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+          <button style="display:flex;align-items:center;justify-content:center;gap:6px;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:9px 12px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:2px">Oturum aç</button>
+          <div style="font-size:12.5px;color:#64748b;text-align:center">Hesabınız yok mu? <a href="#" style="font-weight:600">Kayıt olun</a></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:400px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">GİRİŞ — 401 HATASI + GÖNDERİLİYOR</div>
+      <div style="background:#f4f6f8;border:1px solid #d3dce4;border-radius:8px;padding:40px 28px;display:flex;flex-direction:column;gap:20px">
+        <div style="background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(15,23,42,0.05)">
+          <div style="font-size:17px;font-weight:700">Oturum aç</div>
+          <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;font-size:12.5px;color:#b91c1c">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+            <span><strong>Giriş başarısız.</strong> Kullanıcı adı/e-posta veya parola hatalı. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#dc8f8f">(401)</span></span>
+          </div>
+          <input value="aysedemir" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none">
+          <input type="password" value="••••••••" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none">
+          <button disabled="{{ true }}" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:9px 12px;font-size:13.5px;font-weight:600;font-family:inherit;opacity:0.75;cursor:progress">
+            <span style="width:13px;height:13px;border:2px solid rgba(255,255,255,0.4);border-top-color:#ffffff;border-radius:50%;animation:spin .7s linear infinite"></span>
+            Oturum açılıyor…
+          </button>
+        </div>
+        <div style="background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 2px rgba(15,23,42,0.05)">
+          <div role="status" style="display:flex;gap:8px;align-items:flex-start;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 12px;font-size:12.5px;color:#92400e">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 7v5l3 2"></path></svg>
+            <span><strong>Oturum süreniz doldu.</strong> Güvenliğiniz için lütfen yeniden oturum açın.</span>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b">oturum-süresi-doldu: 401 sonrası girişe yönlendirme, dönüş URL'si korunur</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:400px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">KAYIT — SATIR İÇİ DOĞRULAMA</div>
+      <div style="background:#f4f6f8;border:1px solid #d3dce4;border-radius:8px;padding:40px 28px;display:flex;justify-content:center">
+        <div style="width:100%;background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:13px;box-shadow:0 1px 2px rgba(15,23,42,0.05)">
+          <div>
+            <div style="font-size:17px;font-weight:700">Hesap oluştur</div>
+            <div style="font-size:12.5px;color:#64748b;margin-top:2px">Üye olarak katılırsınız; rol seçimi yoktur.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Görünen ad <span style="font-weight:400;color:#94a3b8">(isteğe bağlı)</span></label>
+            <input value="Ayşe Demir" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Kullanıcı adı</label>
+            <input value="ayse demir" aria-invalid="true" style="width:100%;padding:8px 10px;border:1px solid #dc2626;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none;box-shadow:0 0 0 3px rgba(220,38,38,0.10)">
+            <div role="alert" style="display:flex;align-items:center;gap:5px;font-size:12px;color:#b91c1c">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+              Kullanıcı adı boşluk içeremez.
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">E-posta</label>
+            <input value="ayse@ornek.com" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Parola</label>
+            <div style="position:relative">
+              <input value="merhaba1" aria-invalid="true" style="width:100%;padding:8px 34px 8px 10px;border:1px solid #dc2626;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none;box-shadow:0 0 0 3px rgba(220,38,38,0.10)">
+              <button aria-label="Parolayı gizle" title="Parolayı gizle" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);border:none;background:transparent;padding:6px;cursor:pointer;display:flex;border-radius:6px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle><path d="m4 4 16 16"></path></svg>
+              </button>
+            </div>
+            <div role="alert" style="display:flex;align-items:flex-start;gap:5px;font-size:12px;color:#b91c1c">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+              En az bir büyük harf içermelidir.
+            </div>
+            <div style="font-size:11.5px;color:#64748b">En az 8 karakter; büyük harf, küçük harf ve rakam içermeli.</div>
+          </div>
+          <button style="display:flex;align-items:center;justify-content:center;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:9px 12px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit">Hesap oluştur</button>
+          <div style="font-size:12.5px;color:#64748b;text-align:center">Zaten hesabınız var mı? <a href="#" style="font-weight:600">Oturum açın</a></div>
+        </div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">alanlar sözleşmeyle birebir: displayName? + userName + email + password. parola onayı, şirket, KVKK onay kutusu, sosyal giriş YOK.</div>
+    </div>
+  </div>
+</section>
+
+
+<section data-screen-label="02 Proje Listesi" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">02 · Proje Listesi</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Projeler + oluşturma diyaloğu + durumlar</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">Sadece sözleşmedeki alanlar: ad, açıklama?, ownerUserId, createdAtUtc, updatedAtUtc?. Görev sayısı, ikon, ekip adı veya aktivite YOK. Kullanıcı yalnızca sahibi/üyesi olduğu projeleri görür.</p>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">MASAÜSTÜ 1280 — DOLU LİSTE</div>
+      <div style="width:1280px;height:640px;display:flex;background:#ffffff;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);flex:none">
+        <dc-import name="Sidebar" active="overview" project="Web Sitesi Yenileme" style="width:232px;flex:0 0 232px;align-self:stretch" hint-size="232px,640px"></dc-import>
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#f8fafc">
+          <div style="height:48px;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid #e2e8f0;background:#ffffff;flex:none">
+            <span style="font-size:12.5px;font-weight:600;color:#0f172a">Projeler</span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+              <button aria-label="Bildirimler" title="Bildirimler" style="position:relative;border:none;background:transparent;padding:7px;border-radius:6px;cursor:pointer;display:flex">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                <span style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#dc2626;border:1.5px solid #ffffff"></span>
+              </button>
+              <button style="display:flex;align-items:center;gap:7px;border:none;background:transparent;padding:4px 6px;border-radius:6px;cursor:pointer;font-family:inherit">
+                <span style="width:24px;height:24px;border-radius:6px;background:#e0efec;color:#0f766e;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">AD</span>
+                <span style="font-size:12.5px;font-weight:600;color:#334155">Ayşe Demir</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+              </button>
+            </div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:24px 28px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+              <div>
+                <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.01em">Projeler</h1>
+                <div style="font-size:12.5px;color:#64748b;margin-top:2px">Sahibi olduğunuz veya üyesi olduğunuz projeler · 4 proje</div>
+              </div>
+              <button style="display:inline-flex;align-items:center;gap:6px;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;flex:none">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                Yeni proje
+              </button>
+            </div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:1fr 200px 170px 40px;gap:12px;align-items:center;padding:8px 16px;border-bottom:1px solid #e2e8f0;background:#fbfcfd;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">
+                <span>Proje</span><span>Sahip</span><span>Oluşturulma</span><span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 200px 170px 40px;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef2f6">
+                <div style="min-width:0"><a href="#" style="font-size:13.5px;font-weight:600;text-decoration:none;color:#0f172a">Web Sitesi Yenileme</a><div style="font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Kurumsal sitenin yeni tasarım ve altyapı geçişi</div></div>
+                <div style="display:flex;align-items:center;gap:6px"><span title="2c9e4b7a-1f36-4d8c-a2e0-5b91d63f8a12" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 7px;color:#475569">Ayşe Demir</span><span style="font-size:10.5px;font-weight:700;color:#0f766e;background:#e0efec;border-radius:4px;padding:1px 6px">siz</span></div>
+                <span style="font-size:12.5px;color:#475569" title="2026-06-03T09:15:00Z">3 Haz 2026</span>
+                <button aria-label="Proje eylemleri" title="Eylemler" style="border:none;background:transparent;padding:6px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 200px 170px 40px;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef2f6">
+                <div style="min-width:0"><a href="#" style="font-size:13.5px;font-weight:600;text-decoration:none;color:#0f172a">Mobil Uygulama v2</a><div style="font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">iOS ve Android istemcilerinin ikinci sürümü</div></div>
+                <div style="display:flex;align-items:center;gap:6px"><span title="7d1f9c3b-8e42-4a67-b5d0-0c2a84e6f931" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 7px;color:#475569">Emre Yıldız</span></div>
+                <span style="font-size:12.5px;color:#475569" title="2026-05-18T13:40:00Z">18 May 2026</span>
+                <button aria-label="Proje eylemleri" title="Eylemler" style="border:none;background:transparent;padding:6px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 200px 170px 40px;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef2f6">
+                <div style="min-width:0"><a href="#" style="font-size:13.5px;font-weight:600;text-decoration:none;color:#0f172a">İç Araçlar</a><div style="font-size:12px;color:#94a3b8;font-style:italic">Açıklama yok</div></div>
+                <div style="display:flex;align-items:center;gap:6px"><span title="2c9e4b7a-1f36-4d8c-a2e0-5b91d63f8a12" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 7px;color:#475569">Ayşe Demir</span><span style="font-size:10.5px;font-weight:700;color:#0f766e;background:#e0efec;border-radius:4px;padding:1px 6px">siz</span></div>
+                <span style="font-size:12.5px;color:#475569" title="2026-04-02T08:00:00Z">2 Nis 2026</span>
+                <button aria-label="Proje eylemleri" title="Eylemler" style="border:none;background:transparent;padding:6px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 200px 170px 40px;gap:12px;align-items:center;padding:12px 16px">
+                <div style="min-width:0"><a href="#" style="font-size:13.5px;font-weight:600;text-decoration:none;color:#0f172a">Pazarlama Kampanyası Q3</a><div style="font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Üçüncü çeyrek lansman içerikleri ve takvimi</div></div>
+                <div style="display:flex;align-items:center;gap:6px"><span title="a4b82e5d-90c1-4f73-8d26-3e57b1c40d88" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 7px;color:#475569">Elif Şahin</span></div>
+                <span style="font-size:12.5px;color:#475569" title="2026-07-01T10:20:00Z">1 Tem 2026</span>
+                <button aria-label="Proje eylemleri" title="Eylemler" style="border:none;background:transparent;padding:6px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+            </div>
+            <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b">satır eylem menüsü: Aç · Düzenle · Sil (yalnız sahip; tehlike bölgesi §09). "siz" rozeti ownerUserId eşleşmesinden türetilir.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:420px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">YENİ PROJE DİYALOĞU (shadcn Dialog)</div>
+      <div style="background:rgba(15,23,42,0.45);border-radius:8px;padding:36px 28px;display:flex;justify-content:center">
+        <div role="dialog" aria-label="Yeni proje" style="width:100%;background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:13px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div><div style="font-size:15px;font-weight:700">Yeni proje</div><div style="font-size:12px;color:#64748b;margin-top:2px">Proje sahibi siz olursunuz.</div></div>
+            <button aria-label="Kapat" title="Kapat" style="border:none;background:transparent;padding:4px;cursor:pointer;border-radius:6px;display:flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Proje adı</label>
+            <input value="Pazarlama Kampanyası Q3" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Açıklama <span style="font-weight:400;color:#94a3b8">(isteğe bağlı)</span></label>
+            <textarea rows="3" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none;resize:vertical">Üçüncü çeyrek lansman içerikleri ve takvimi</textarea>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:2px">
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vazgeç</button>
+            <button style="background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Oluştur</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em;margin-top:10px">MOBİL 390 — LİSTE + ÇEKMECE</div>
+      <div style="display:flex;gap:16px">
+        <div style="width:200px;background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;flex:none">
+          <div style="height:44px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#ffffff;border-bottom:1px solid #e2e8f0">
+            <button aria-label="Menü" style="border:none;background:transparent;padding:8px;display:flex;cursor:pointer;min-width:36px;min-height:36px;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg></button>
+            <span style="font-size:12.5px;font-weight:700">Projeler</span>
+          </div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px"><div style="font-size:12px;font-weight:600">Web Sitesi Yenileme</div><div style="font-size:10.5px;color:#64748b;margin-top:2px">3 Haz 2026 · <span style="font-weight:600">Ayşe Demir</span></div></div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px"><div style="font-size:12px;font-weight:600">Mobil Uygulama v2</div><div style="font-size:10.5px;color:#64748b;margin-top:2px">18 May 2026 · <span style="font-weight:600">Emre Yıldız</span></div></div>
+            <button style="display:flex;align-items:center;justify-content:center;gap:6px;background:#0f766e;color:#ffffff;border:none;border-radius:6px;padding:11px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;min-height:44px">+ Yeni proje</button>
+          </div>
+        </div>
+        <div style="width:200px;background:rgba(15,23,42,0.45);border:1px solid #d3dce4;border-radius:8px;overflow:hidden;display:flex;flex:none">
+          <div style="width:150px;background:#fbfcfd;display:flex;flex-direction:column;padding:12px;gap:2px">
+            <div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px"><span style="width:16px;height:16px;border-radius:4px;background:#0f766e;display:inline-block"></span>TaskManagement</div>
+            <div style="font-size:11.5px;font-weight:600;color:#0f766e;background:#e0efec;border-radius:6px;padding:9px 8px">Genel Bakış</div>
+            <div style="font-size:11.5px;font-weight:500;color:#475569;padding:9px 8px">Görevler</div>
+            <div style="font-size:11.5px;font-weight:500;color:#475569;padding:9px 8px">Üyeler</div>
+            <div style="margin-top:auto;font-size:11px;color:#64748b;border-top:1px solid #e8edf2;padding-top:8px">Ayşe Demir<br><span style="color:#94a3b8">@aysedemir</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">mobil: kenar çubuğu yerine Sheet çekmece; tüm hedefler ≥44px. (küçültülmüş önizleme)</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">DURUMLAR — BOŞ · YÜKLENİYOR · HATA · ERİŞİM YOK</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="width:300px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
+          <div style="font-size:13.5px;font-weight:600">Henüz projeniz yok</div>
+          <div style="font-size:12px;color:#64748b">İlk projenizi oluşturarak başlayın.</div>
+          <button style="display:inline-flex;align-items:center;gap:6px;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Yeni proje</button>
+        </div>
+        <div style="width:300px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="height:13px;width:55%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="height:11px;width:80%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="height:13px;width:45%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="height:11px;width:70%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">Skeleton: 4 satır, gerçek yerleşimle aynı ızgara</div>
+        </div>
+        <div style="width:300px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;font-size:12.5px;color:#b91c1c">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+            <span><strong>Projeler yüklenemedi.</strong> Sunucuya ulaşılamıyor. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px">(ProblemDetailsAlert)</span></span>
+          </div>
+          <button style="align-self:flex-start;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Tekrar dene</button>
+        </div>
+        <div style="width:300px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <div style="font-size:13.5px;font-weight:600">Bu projeye erişiminiz yok</div>
+          <div style="font-size:12px;color:#64748b">Bağlantı size ait olmayan bir projeye işaret ediyor. Proje sahibinden sizi eklemesini isteyin. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">(403/404)</span></div>
+          <a href="#" style="font-size:12.5px;font-weight:600">Projelerime dön</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="03 Proje Genel Bakış" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">03 · Proje Genel Bakış</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">İstatistikler + geciken görevler</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">Sayfa başlığı proje adının kendisidir. Altı metrik + tamamlanma yüzdesi istatistik uç noktasından gelir. Aktivite akışı yok (endpoint mevcut değil).</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">MASAÜSTÜ 1280</div>
+      <div style="width:1280px;height:720px;display:flex;background:#ffffff;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);flex:none">
+        <dc-import name="Sidebar" active="overview" project="Web Sitesi Yenileme" style="width:232px;flex:0 0 232px;align-self:stretch" hint-size="232px,720px"></dc-import>
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#f8fafc">
+          <div style="height:48px;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid #e2e8f0;background:#ffffff;flex:none">
+            <a href="#" style="font-size:12.5px;color:#64748b;text-decoration:none">Projeler</a>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+            <span style="font-size:12.5px;font-weight:600;color:#0f172a">Web Sitesi Yenileme</span>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+              <button style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:5px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Proje ayarları</button>
+              <button aria-label="Bildirimler" title="Bildirimler" style="position:relative;border:none;background:transparent;padding:7px;border-radius:6px;cursor:pointer;display:flex">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                <span style="position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#dc2626;border:1.5px solid #ffffff"></span>
+              </button>
+            </div>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:24px 28px;display:flex;flex-direction:column;gap:18px">
+            <div>
+              <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.01em">Web Sitesi Yenileme</h1>
+              <div style="font-size:13px;color:#475569;margin-top:3px;max-width:640px">Kurumsal sitenin yeni tasarım ve altyapı geçişi</div>
+              <div style="display:flex;gap:14px;margin-top:6px;font-size:12px;color:#64748b;align-items:center">
+                <span>Sahip: <span title="2c9e4b7a-1f36-4d8c-a2e0-5b91d63f8a12" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569">Ayşe Demir</span> <span style="font-size:10.5px;font-weight:700;color:#0f766e;background:#e0efec;border-radius:4px;padding:1px 6px">siz</span></span>
+                <span title="2026-06-03T09:15:00Z">Oluşturulma: 3 Haz 2026</span>
+                <span title="2026-07-19T16:05:00Z">Güncelleme: 19 Tem 2026</span>
+              </div>
+            </div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px">
+              <span style="font-size:12.5px;font-weight:600;color:#334155;flex:none">Tamamlanma</span>
+              <div style="flex:1;height:8px;border-radius:4px;background:#e2e8f0;overflow:hidden"><div style="width:29%;height:100%;background:#0f766e;border-radius:4px"></div></div>
+              <span style="font-size:13px;font-weight:700;color:#0f172a;flex:none">%29</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px"><div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Toplam</div><div style="font-size:22px;font-weight:700;margin-top:4px">24</div></div>
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px"><div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Yapılacak</div><div style="font-size:22px;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:7px">9 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><circle cx="12" cy="12" r="9"></circle></svg></div></div>
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px"><div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Devam Eden</div><div style="font-size:22px;font-weight:700;margin-top:4px;color:#1d4ed8;display:flex;align-items:center;gap:7px">6 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div></div>
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px"><div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Tamamlanan</div><div style="font-size:22px;font-weight:700;margin-top:4px;color:#15803d;display:flex;align-items:center;gap:7px">7 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></div></div>
+              <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px"><div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">İptal</div><div style="font-size:22px;font-weight:700;margin-top:4px;color:#64748b;display:flex;align-items:center;gap:7px">2 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></div></div>
+              <div style="background:#ffffff;border:1px solid #fecaca;border-radius:8px;padding:12px 14px"><div style="font-size:11px;font-weight:600;color:#b91c1c;text-transform:uppercase;letter-spacing:0.05em">Geciken</div><div style="font-size:22px;font-weight:700;margin-top:4px;color:#b91c1c;display:flex;align-items:center;gap:7px">3 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg></div></div>
+            </div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #eef2f6">
+                <div style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+                  Geciken görevler <span style="font-size:11.5px;font-weight:700;color:#b91c1c;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:1px 7px">3</span>
+                </div>
+                <a href="#" style="font-size:12.5px;font-weight:600">Görevlerde filtrele →</a>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 130px 150px 170px;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid #eef2f6">
+                <a href="#" style="font-size:13px;font-weight:600;color:#0f172a;text-decoration:none">Ödeme sayfası hata düzeltmesi</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"></path><path d="m17 18-5-5-5 5"></path></svg>Kritik</span>
+                <span style="font-size:12.5px;color:#b91c1c;font-weight:600" title="2026-07-18T21:00:00Z">Son: 18 Tem 2026</span>
+                <span title="9b6e2f4a-3c81-47d5-b920-6e1a75c3d208" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569;justify-self:start">Mehmet Kaya</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 130px 150px 170px;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid #eef2f6">
+                <a href="#" style="font-size:13px;font-weight:600;color:#0f172a;text-decoration:none">Sunucu yanıt süresi iyileştirmesi</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#fffbeb;color:#b45309;border:1px solid #fde68a;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14-6-6-6 6"></path></svg>Yüksek</span>
+                <span style="font-size:12.5px;color:#b91c1c;font-weight:600" title="2026-07-15T21:00:00Z">Son: 15 Tem 2026</span>
+                <span title="2c9e4b7a-1f36-4d8c-a2e0-5b91d63f8a12" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569;justify-self:start">Ayşe Demir</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 130px 150px 170px;gap:12px;align-items:center;padding:10px 16px">
+                <a href="#" style="font-size:13px;font-weight:600;color:#0f172a;text-decoration:none">Görsel sıkıştırma hattı</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 9h14"></path><path d="M5 15h14"></path></svg>Orta</span>
+                <span style="font-size:12.5px;color:#b91c1c;font-weight:600" title="2026-07-10T21:00:00Z">Son: 10 Tem 2026</span>
+                <span style="font-size:12px;color:#94a3b8;font-style:italic;justify-self:start">Atanmamış</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:390px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">MOBİL 390</div>
+      <div style="width:390px;background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08)">
+        <div style="height:48px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#ffffff;border-bottom:1px solid #e2e8f0">
+          <button aria-label="Menü" style="border:none;background:transparent;padding:10px;display:flex;cursor:pointer;min-width:44px;min-height:44px;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg></button>
+          <span style="font-size:14px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Web Sitesi Yenileme</span>
+          <button aria-label="Bildirimler" style="position:relative;border:none;background:transparent;padding:10px;display:flex;cursor:pointer;min-width:44px;min-height:44px;align-items:center;justify-content:center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+            <span style="position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:#dc2626;border:1.5px solid #ffffff"></span>
+          </button>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:12.5px;color:#475569">Kurumsal sitenin yeni tasarım ve altyapı geçişi</div>
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px">
+            <div style="flex:1;height:8px;border-radius:4px;background:#e2e8f0;overflow:hidden"><div style="width:29%;height:100%;background:#0f766e"></div></div>
+            <span style="font-size:12.5px;font-weight:700">%29</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px"><div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase">Toplam</div><div style="font-size:18px;font-weight:700">24</div></div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px"><div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase">Yapılacak</div><div style="font-size:18px;font-weight:700">9</div></div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px"><div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase">Devam</div><div style="font-size:18px;font-weight:700;color:#1d4ed8">6</div></div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px"><div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase">Tamam</div><div style="font-size:18px;font-weight:700;color:#15803d">7</div></div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px"><div style="font-size:10px;font-weight:600;color:#64748b;text-transform:uppercase">İptal</div><div style="font-size:18px;font-weight:700;color:#64748b">2</div></div>
+            <div style="background:#ffffff;border:1px solid #fecaca;border-radius:8px;padding:10px"><div style="font-size:10px;font-weight:600;color:#b91c1c;text-transform:uppercase">Geciken</div><div style="font-size:18px;font-weight:700;color:#b91c1c">3</div></div>
+          </div>
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+              Geciken görevler (3)
+            </div>
+            <div style="border-top:1px solid #eef2f6;padding-top:8px;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;font-weight:600">Ödeme sayfası hata düzeltmesi</span><span style="font-size:11.5px;color:#b91c1c;font-weight:600">Kritik · Son: 18 Tem 2026</span></div>
+            <div style="border-top:1px solid #eef2f6;padding-top:8px;display:flex;flex-direction:column;gap:2px"><span style="font-size:12.5px;font-weight:600">Sunucu yanıt süresi iyileştirmesi</span><span style="font-size:11.5px;color:#b91c1c;font-weight:600">Yüksek · Son: 15 Tem 2026</span></div>
+            <a href="#" style="font-size:12px;font-weight:600;margin-top:4px">Görevlerde filtrele →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="04 Görev Listesi" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">04 · Görev Listesi</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Yoğun tablo + filtreler + sayfalama</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">Tek durum + tek öncelik filtresi, title/status/priority/dueDate/createdAtUtc sıralama, sayfalı liste. Metin araması YOK (endpoint yok). Sıralama başlıktan; aktif kolon ok ile işaretli.</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">MASAÜSTÜ 1280 — FİLTRELİ LİSTE (durum: tümü · öncelik: tümü · sıralama: dueDate asc)</div>
+      <div style="width:1280px;height:700px;display:flex;background:#ffffff;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);flex:none">
+        <dc-import name="Sidebar" active="tasks" project="Web Sitesi Yenileme" style="width:232px;flex:0 0 232px;align-self:stretch" hint-size="232px,700px"></dc-import>
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#f8fafc">
+          <div style="height:48px;display:flex;align-items:center;gap:8px;padding:0 20px;border-bottom:1px solid #e2e8f0;background:#ffffff;flex:none">
+            <a href="#" style="font-size:12.5px;color:#64748b;text-decoration:none">Web Sitesi Yenileme</a>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+            <span style="font-size:12.5px;font-weight:600;color:#0f172a">Görevler</span>
+          </div>
+          <div style="flex:1;overflow:hidden;padding:20px 28px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <button style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Durum: Tümü <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <button style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Öncelik: Tümü <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <button style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="m21 8-4-4-4 4"></path><path d="M17 4v16"></path></svg>
+                Son tarih · Artan
+              </button>
+              <div style="margin-left:auto;display:flex;gap:8px">
+                <button style="display:inline-flex;align-items:center;gap:6px;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                  Yeni görev
+                </button>
+              </div>
+            </div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="display:grid;grid-template-columns:1fr 132px 112px 148px 158px 118px 36px;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid #e2e8f0;background:#fbfcfd;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">
+                <button style="display:flex;align-items:center;gap:4px;border:none;background:transparent;font:inherit;color:inherit;cursor:pointer;padding:0;text-transform:inherit;letter-spacing:inherit">Başlık</button>
+                <button style="display:flex;align-items:center;gap:4px;border:none;background:transparent;font:inherit;color:inherit;cursor:pointer;padding:0;text-transform:inherit;letter-spacing:inherit">Durum</button>
+                <button style="display:flex;align-items:center;gap:4px;border:none;background:transparent;font:inherit;color:inherit;cursor:pointer;padding:0;text-transform:inherit;letter-spacing:inherit">Öncelik</button>
+                <button style="display:flex;align-items:center;gap:4px;border:none;background:transparent;font:inherit;color:#0f766e;cursor:pointer;padding:0;text-transform:inherit;letter-spacing:inherit">Son Tarih <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></svg></button>
+                <span>Atanan</span>
+                <button style="display:flex;align-items:center;gap:4px;border:none;background:transparent;font:inherit;color:inherit;cursor:pointer;padding:0;text-transform:inherit;letter-spacing:inherit">Oluşturulma</button>
+                <span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 132px 112px 148px 158px 118px 36px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #eef2f6;background:#fffbfb">
+                <a href="#" style="font-size:13px;font-weight:600;color:#0f172a;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Ödeme sayfası hata düzeltmesi</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Devam Ediyor</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"></path><path d="m17 18-5-5-5 5"></path></svg>Kritik</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:#b91c1c;font-weight:600" title="2026-07-18T21:00:00Z"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>18 Tem · Gecikti</span>
+                <span title="9b6e2f4a-3c81-47d5-b920-6e1a75c3d208" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569;justify-self:start">Mehmet Kaya</span>
+                <span style="font-size:12px;color:#64748b" title="2026-07-02T11:12:00Z">2 Tem 2026</span>
+                <button aria-label="Görev eylemleri" title="Eylemler" style="border:none;background:transparent;padding:5px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 132px 112px 148px 158px 118px 36px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #eef2f6">
+                <a href="#" style="font-size:13px;font-weight:600;color:#0f172a;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Ana sayfa hero bölümü revizyonu</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"></circle></svg>Yapılacak</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#fffbeb;color:#b45309;border:1px solid #fde68a;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14-6-6-6 6"></path></svg>Yüksek</span>
+                <span style="font-size:12.5px;color:#334155" title="2026-07-24T21:00:00Z">24 Tem 2026</span>
+                <span title="2c9e4b7a-1f36-4d8c-a2e0-5b91d63f8a12" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569;justify-self:start">Ayşe Demir</span>
+                <span style="font-size:12px;color:#64748b" title="2026-07-05T09:30:00Z">5 Tem 2026</span>
+                <button aria-label="Görev eylemleri" title="Eylemler" style="border:none;background:transparent;padding:5px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 132px 112px 148px 158px 118px 36px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #eef2f6">
+                <a href="#" style="font-size:13px;font-weight:600;color:#0f172a;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">SEO meta etiketleri güncellemesi</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"></circle></svg>Yapılacak</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 9h14"></path><path d="M5 15h14"></path></svg>Orta</span>
+                <span style="font-size:12.5px;color:#334155" title="2026-07-28T21:00:00Z">28 Tem 2026</span>
+                <span style="font-size:12px;color:#94a3b8;font-style:italic;justify-self:start">Atanmamış</span>
+                <span style="font-size:12px;color:#64748b" title="2026-07-08T14:00:00Z">8 Tem 2026</span>
+                <button aria-label="Görev eylemleri" title="Eylemler" style="border:none;background:transparent;padding:5px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 132px 112px 148px 158px 118px 36px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #eef2f6">
+                <a href="#" style="font-size:13px;font-weight:600;color:#0f172a;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Erişilebilirlik denetimi (WCAG AA)</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Devam Ediyor</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 9h14"></path><path d="M5 15h14"></path></svg>Orta</span>
+                <span style="font-size:12.5px;color:#334155" title="2026-07-31T21:00:00Z">31 Tem 2026</span>
+                <span title="5e0d8a2c-47b9-4c13-9f68-b2d4e7a1c556" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569;justify-self:start">Zeynep Arslan</span>
+                <span style="font-size:12px;color:#64748b" title="2026-06-28T10:45:00Z">28 Haz 2026</span>
+                <button aria-label="Görev eylemleri" title="Eylemler" style="border:none;background:transparent;padding:5px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 132px 112px 148px 158px 118px 36px;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid #eef2f6">
+                <a href="#" style="font-size:13px;font-weight:500;color:#64748b;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Footer bağlantılarını düzelt</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f0fdf4;color:#15803d;border:1px solid #dcfce7;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg>Tamamlandı</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 10 6 6 6-6"></path></svg>Düşük</span>
+                <span style="font-size:12.5px;color:#64748b" title="2026-07-12T21:00:00Z">12 Tem 2026</span>
+                <span title="9b6e2f4a-3c81-47d5-b920-6e1a75c3d208" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569;justify-self:start">Mehmet Kaya</span>
+                <span style="font-size:12px;color:#64748b" title="2026-06-20T08:05:00Z">20 Haz 2026</span>
+                <button aria-label="Görev eylemleri" title="Eylemler" style="border:none;background:transparent;padding:5px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 132px 112px 148px 158px 118px 36px;gap:10px;align-items:center;padding:10px 16px">
+                <a href="#" style="font-size:13px;font-weight:500;color:#94a3b8;text-decoration:line-through;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Eski blog şablonunu kaldır</a>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="m9 9 6 6"></path><path d="m15 9-6 6"></path></svg>İptal</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;justify-self:start"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 10 6 6 6-6"></path></svg>Düşük</span>
+                <span style="font-size:12.5px;color:#94a3b8">—</span>
+                <span style="font-size:12px;color:#94a3b8;font-style:italic;justify-self:start">Atanmamış</span>
+                <span style="font-size:12px;color:#64748b" title="2026-06-10T12:00:00Z">10 Haz 2026</span>
+                <button aria-label="Görev eylemleri" title="Eylemler" style="border:none;background:transparent;padding:5px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              </div>
+              <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #e2e8f0;background:#fbfcfd">
+                <span style="font-size:12px;color:#64748b">24 görevden 1–10 gösteriliyor</span>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <button disabled="{{ true }}" aria-label="Önceki sayfa" style="border:1px solid #e2e8f0;background:#f8fafc;color:#cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:600;font-family:inherit;cursor:not-allowed">‹</button>
+                  <button style="border:1px solid #0f766e;background:#0f766e;color:#ffffff;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">1</button>
+                  <button style="border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">2</button>
+                  <button style="border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">3</button>
+                  <button aria-label="Sonraki sayfa" style="border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">›</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:390px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">MOBİL 390 — YAPILANDIRILMIŞ SATIRLAR</div>
+      <div style="width:390px;background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08)">
+        <div style="height:48px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#ffffff;border-bottom:1px solid #e2e8f0">
+          <button aria-label="Menü" style="border:none;background:transparent;padding:10px;display:flex;cursor:pointer;min-width:44px;min-height:44px;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg></button>
+          <span style="font-size:14px;font-weight:700;flex:1">Görevler</span>
+          <button aria-label="Yeni görev" title="Yeni görev" style="border:none;background:#0f766e;color:#ffffff;border-radius:6px;display:flex;cursor:pointer;min-width:44px;min-height:44px;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+        </div>
+        <div style="display:flex;gap:8px;padding:10px 12px;border-bottom:1px solid #e2e8f0;background:#ffffff;overflow:hidden">
+          <button style="display:inline-flex;align-items:center;gap:5px;background:#e0efec;color:#0f766e;border:1px solid #cce4df;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;min-height:38px">Durum: Yapılacak</button>
+          <button style="display:inline-flex;align-items:center;gap:5px;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;min-height:38px">Öncelik</button>
+          <button style="display:inline-flex;align-items:center;gap:5px;background:transparent;color:#0f766e;border:none;padding:8px 6px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;min-height:38px">Temizle ✕</button>
+        </div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:7px">
+            <div style="font-size:13px;font-weight:600">Ana sayfa hero bölümü revizyonu</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0">Yapılacak</span>
+              <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:600;background:#fffbeb;color:#b45309;border:1px solid #fde68a">Yüksek</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#64748b"><span>Son: 24 Tem 2026</span><span style="font-weight:600">Ayşe Demir</span></div>
+          </div>
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:7px">
+            <div style="font-size:13px;font-weight:600">SEO meta etiketleri güncellemesi</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0">Yapılacak</span>
+              <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe">Orta</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#64748b"><span>Son: 28 Tem 2026</span><span style="font-style:italic;color:#94a3b8">Atanmamış</span></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px">
+            <span style="font-size:11.5px;color:#64748b">9 görevden 1–2</span>
+            <div style="display:flex;gap:6px">
+              <button style="border:1px solid #cbd5e1;background:#ffffff;border-radius:6px;min-width:44px;min-height:40px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:#334155">‹</button>
+              <button style="border:1px solid #cbd5e1;background:#ffffff;border-radius:6px;min-width:44px;min-height:40px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:#334155">›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">DURUMLAR — YÜKLENİYOR · BOŞ · FİLTRELİ-BOŞ · HATA · 429</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="width:280px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="height:12px;width:65%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="height:12px;width:85%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="height:12px;width:50%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="height:12px;width:75%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">tablo skeleton'ı: 10 satır, kolon ızgarası korunur</div>
+        </div>
+        <div style="width:280px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:24px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="6" height="6" x="3" y="5" rx="1"></rect><path d="m3 17 2 2 4-4"></path><path d="M13 6h8"></path><path d="M13 12h8"></path><path d="M13 18h8"></path></svg>
+          <div style="font-size:13px;font-weight:600">Bu projede henüz görev yok</div>
+          <div style="font-size:12px;color:#64748b">İlk görevi oluşturun.</div>
+          <button style="background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Yeni görev</button>
+        </div>
+        <div style="width:280px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:24px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          <div style="font-size:13px;font-weight:600">Filtreyle eşleşen görev yok</div>
+          <div style="font-size:12px;color:#64748b">Durum: Tamamlandı · Öncelik: Kritik</div>
+          <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Filtreleri temizle</button>
+        </div>
+        <div style="width:280px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;font-size:12.5px;color:#b91c1c">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+            <span><strong>Görevler yüklenemedi.</strong> Beklenmeyen bir hata oluştu. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px">(500)</span></span>
+          </div>
+          <button style="align-self:flex-start;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Tekrar dene</button>
+        </div>
+        <div style="width:280px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 12px;font-size:12.5px;color:#92400e">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 7v5l3 2"></path></svg>
+            <span><strong>Çok fazla istek.</strong> 12 sn sonra otomatik yenilenecek. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px">(429)</span></span>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">geri sayım Retry-After başlığından; buton geri sayım bitene dek devre dışı</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="05 Görev Formu" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">05 · Görev Oluştur / Düzenle</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Form, 409 çakışması ve kaydedilmemiş değişiklik</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">Alanlar: title, description, status, priority, dueDate, assigneeUserId (proje üyesi GUID'i — kişi arama yok). Diyalog kapatılırken kirli form AlertDialog ile korunur.</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:440px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">YENİ GÖREV — DOĞRULAMA</div>
+      <div style="background:rgba(15,23,42,0.45);border-radius:8px;padding:32px 26px;display:flex;justify-content:center">
+        <div role="dialog" aria-label="Yeni görev" style="width:100%;background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div style="font-size:15px;font-weight:700">Yeni görev</div>
+            <button aria-label="Kapat" title="Kapat" style="border:none;background:transparent;padding:4px;cursor:pointer;border-radius:6px;display:flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Başlık</label>
+            <input value="" aria-invalid="true" placeholder="Görev başlığı" style="width:100%;padding:8px 10px;border:1px solid #dc2626;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none;box-shadow:0 0 0 3px rgba(220,38,38,0.10)">
+            <div role="alert" style="display:flex;align-items:center;gap:5px;font-size:12px;color:#b91c1c"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>Başlık zorunludur.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Açıklama <span style="font-weight:400;color:#94a3b8">(isteğe bağlı)</span></label>
+            <textarea rows="3" placeholder="Ayrıntılar…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none;resize:vertical"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label style="font-size:12px;font-weight:600;color:#334155">Durum</label>
+              <button style="display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;cursor:pointer;color:#0f172a">Yapılacak <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label style="font-size:12px;font-weight:600;color:#334155">Öncelik</label>
+              <button style="display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;cursor:pointer;color:#0f172a">Orta <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label style="font-size:12px;font-weight:600;color:#334155">Son tarih <span style="font-weight:400;color:#94a3b8">(ops.)</span></label>
+              <button style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;cursor:pointer;color:#64748b">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+                Tarih seç
+              </button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label style="font-size:12px;font-weight:600;color:#334155">Atanan <span style="font-weight:400;color:#94a3b8">(ops.)</span></label>
+              <button style="display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-family:inherit;background:#ffffff;cursor:pointer;color:#0f172a">Mehmet Kaya <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <div style="font-size:11px;color:#64748b">Proje üyeleri arasından seçilir; userId arka planda gönderilir</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:2px">
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vazgeç</button>
+            <button style="background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Oluştur</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:440px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">DÜZENLE — 409 ÇAKIŞMASI + GÖNDERİLİYOR</div>
+      <div style="background:rgba(15,23,42,0.45);border-radius:8px;padding:32px 26px;display:flex;justify-content:center">
+        <div role="dialog" aria-label="Görevi düzenle" style="width:100%;background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div style="font-size:15px;font-weight:700">Görevi düzenle</div>
+          <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 12px;font-size:12.5px;color:#92400e">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+            <span><strong>Bu görev siz düzenlerken başkası tarafından güncellendi.</strong> Son sürümü yükleyip değişikliklerinizi yeniden uygulayın. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px">(409)</span></span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Son sürümü yükle</button>
+            <button style="background:transparent;color:#475569;border:1px solid transparent;border-radius:6px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Girdilerimi panoya kopyala</button>
+          </div>
+          <input value="Ödeme sayfası hata düzeltmesi" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none">
+          <textarea rows="2" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none;resize:vertical">3D Secure yönlendirmesi sonrası sepetin boşalması hatası.</textarea>
+          <div style="display:flex;justify-content:flex-end;gap:8px">
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vazgeç</button>
+            <button disabled="{{ true }}" style="display:inline-flex;align-items:center;gap:8px;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;font-family:inherit;opacity:0.75;cursor:progress">
+              <span style="width:12px;height:12px;border:2px solid rgba(255,255,255,0.4);border-top-color:#ffffff;border-radius:50%;animation:spin .7s linear infinite"></span>
+              Kaydediliyor…
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:380px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">KAYDEDİLMEMİŞ DEĞİŞİKLİK (AlertDialog)</div>
+      <div style="background:rgba(15,23,42,0.45);border-radius:8px;padding:40px 28px;display:flex;justify-content:center">
+        <div role="alertdialog" aria-label="Kaydedilmemiş değişiklikler" style="width:100%;background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div style="font-size:15px;font-weight:700">Kaydedilmemiş değişiklikler var</div>
+          <div style="font-size:12.5px;color:#475569">Formu kapatırsanız yaptığınız değişiklikler kaybolur.</div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Düzenlemeye dön</button>
+            <button style="background:#dc2626;color:#ffffff;border:1px solid #dc2626;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Değişiklikleri at</button>
+          </div>
+        </div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">tetikleyiciler: ESC, dış tıklama, Vazgeç — form kirliyse önce bu diyalog. odak diyalog içinde tuzaklanır, ilk odak "Düzenlemeye dön".</div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="06 Görev Detayı" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">06 · Görev Detayı</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Yan panel (Sheet) — meta + yorumlar + ekler</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">Masaüstünde görev listesi üzerinde sağ Sheet, mobilde tam sayfa. Önce meta veriler, sonra sayfalı yorumlar ve ekler. Yorum/ek yazarları ad soyad ile gösterilir; userId tooltip'te taşınır.</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:520px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">MASAÜSTÜ — SAĞ SHEET (480px)</div>
+      <div style="background:rgba(15,23,42,0.35);border-radius:8px;padding:20px 0 20px 40px;display:flex;justify-content:flex-end">
+        <div role="dialog" aria-label="Görev detayı" style="width:480px;background:#ffffff;border:1px solid #dde4ea;border-radius:8px 0 0 8px;display:flex;flex-direction:column;box-shadow:-8px 0 24px rgba(15,23,42,0.15);max-height:840px;overflow:hidden">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:18px 20px 0">
+            <div>
+              <div style="font-size:16px;font-weight:700;letter-spacing:-0.01em">Ödeme sayfası hata düzeltmesi</div>
+              <div style="display:flex;gap:6px;margin-top:8px">
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Devam Ediyor</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"></path><path d="m17 18-5-5-5 5"></path></svg>Kritik</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>Gecikti</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:4px;flex:none">
+              <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:6px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Düzenle</button>
+              <button aria-label="Diğer eylemler" title="Diğer eylemler" style="border:1px solid #cbd5e1;background:#ffffff;padding:6px;border-radius:6px;cursor:pointer;display:flex"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+              <button aria-label="Kapat" title="Kapat" style="border:none;background:transparent;padding:6px;cursor:pointer;border-radius:6px;display:flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+            </div>
+          </div>
+          <div style="padding:14px 20px;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+            <div style="font-size:13px;color:#334155;line-height:1.55">3D Secure yönlendirmesi sonrası sepetin boşalması hatası. Oturum çerezinin SameSite ayarı incelenecek.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;background:#f8fafc;border:1px solid #e8edf2;border-radius:8px;padding:12px 14px">
+              <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Son tarih</span><span style="font-size:12.5px;font-weight:600;color:#b91c1c" title="2026-07-18T21:00:00Z">18 Tem 2026 · Gecikti</span></div>
+              <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Atanan</span><span title="9b6e2f4a-3c81-47d5-b920-6e1a75c3d208" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569;justify-self:start;width:fit-content">Mehmet Kaya</span></div>
+              <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Oluşturulma</span><span style="font-size:12.5px;color:#334155" title="2026-07-02T11:12:00Z">2 Tem 2026, 14:12</span></div>
+              <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em">Güncelleme</span><span style="font-size:12.5px;color:#334155" title="2026-07-19T16:05:00Z">19 Tem 2026, 19:05</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:13px;font-weight:700">Yorumlar <span style="font-size:11.5px;font-weight:600;color:#64748b">(5)</span></div>
+              <button style="align-self:flex-start;background:transparent;border:none;color:#0f766e;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:0">↑ Daha eski yorumları yükle (3)</button>
+              <div style="display:flex;flex-direction:column;gap:4px;border:1px solid #e8edf2;border-radius:8px;padding:10px 12px">
+                <div style="display:flex;align-items:center;gap:8px"><span title="5e0d8a2c-47b9-4c13-9f68-b2d4e7a1c556" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569">Zeynep Arslan</span><span style="font-size:11.5px;color:#94a3b8" title="2026-07-19T13:22:00Z">19 Tem 2026, 16:22</span></div>
+                <div style="font-size:12.5px;color:#334155;line-height:1.5">Hata staging ortamında yeniden üretildi; çerez SameSite=Lax olunca sepet korunuyor.</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;border:1px solid #e8edf2;border-radius:8px;padding:10px 12px">
+                <div style="display:flex;align-items:center;gap:8px"><span title="2c9e4b7a-1f36-4d8c-a2e0-5b91d63f8a12" style="font-size:12px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 6px;color:#475569">Ayşe Demir</span><span style="font-size:10.5px;font-weight:700;color:#0f766e;background:#e0efec;border-radius:4px;padding:1px 6px">siz</span><span style="font-size:11.5px;color:#94a3b8" title="2026-07-19T14:40:00Z">19 Tem 2026, 17:40</span></div>
+                <div style="font-size:12.5px;color:#334155;line-height:1.5">Harika, yarın sabah düzeltmeyi canlıya alalım.</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:flex-end">
+                <textarea rows="2" placeholder="Yorum yazın…" style="flex:1;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none;resize:none"></textarea>
+                <button style="background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:8px 13px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;flex:none">Gönder</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:13px;font-weight:700">Ekler <span style="font-size:11.5px;font-weight:600;color:#64748b">(2)</span></div>
+                <button style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m17 8-5-5-5 5"></path><path d="M12 3v12"></path></svg>
+                  Dosya yükle
+                </button>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;border:1px solid #e8edf2;border-radius:8px;padding:9px 12px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">odeme-hatasi-ekran.png</div><div style="font-size:11px;color:#64748b">PNG · 412 KB · 19 Tem 2026</div></div>
+                <button aria-label="İndir" title="İndir" style="border:1px solid #cbd5e1;background:#ffffff;padding:6px;border-radius:6px;cursor:pointer;display:flex;flex:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path><path d="M12 15V3"></path></svg></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;border:1px solid #e8edf2;border-radius:8px;padding:9px 12px">
+                <span style="width:14px;height:14px;border:2px solid #cce4df;border-top-color:#0f766e;border-radius:50%;animation:spin .8s linear infinite;flex:none"></span>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:12.5px;font-weight:600">network-log.har</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:4px"><div style="flex:1;height:4px;border-radius:2px;background:#e2e8f0;overflow:hidden"><div style="width:62%;height:100%;background:#0f766e"></div></div><span style="font-size:11px;color:#64748b;flex:none">%62 · 2,1 MB</span></div>
+                </div>
+                <button aria-label="Yüklemeyi iptal et" title="İptal" style="border:none;background:transparent;padding:6px;cursor:pointer;display:flex;flex:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+              </div>
+              <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:8px 11px;font-size:12px;color:#b91c1c">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+                <span><strong>video.mov yüklenemedi.</strong> En fazla 10 MB; izin verilen türler: png, jpg, pdf, har, log, zip.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">izin: Düzenle/Sil yalnızca yetkiliyse görünür; "…" menüsünde Sil (onaylı). ek yokken: "Henüz ek yok — dosya sürükleyin veya yükleyin."</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:390px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">MOBİL 390 — TAM SAYFA</div>
+      <div style="width:390px;background:#ffffff;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08)">
+        <div style="height:48px;display:flex;align-items:center;gap:4px;padding:0 8px;border-bottom:1px solid #e2e8f0">
+          <button aria-label="Geri" style="border:none;background:transparent;padding:10px;display:flex;cursor:pointer;min-width:44px;min-height:44px;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+          <span style="font-size:13.5px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Ödeme sayfası hata düzeltmesi</span>
+          <button aria-label="Eylemler" style="border:none;background:transparent;padding:10px;display:flex;cursor:pointer;min-width:44px;min-height:44px;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+        </div>
+        <div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe">Devam Ediyor</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca">Kritik</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;background:#fef2f2;color:#b91c1c;border:1px solid #fecaca">⚠ Gecikti</span>
+          </div>
+          <div style="font-size:12.5px;color:#334155;line-height:1.5">3D Secure yönlendirmesi sonrası sepetin boşalması hatası.</div>
+          <div style="background:#f8fafc;border:1px solid #e8edf2;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#334155">
+            <div style="display:flex;justify-content:space-between"><span style="color:#64748b">Son tarih</span><span style="color:#b91c1c;font-weight:600">18 Tem 2026</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:#64748b">Atanan</span><span style="font-size:12px;font-weight:600">Mehmet Kaya</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:#64748b">Oluşturulma</span><span>2 Tem 2026</span></div>
+          </div>
+          <div style="font-size:12.5px;font-weight:700">Yorumlar (5)</div>
+          <div style="border:1px solid #e8edf2;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;gap:8px;align-items:center"><span style="font-size:11.5px;font-weight:600;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:1px 5px;color:#475569">Zeynep Arslan</span><span style="font-size:11px;color:#94a3b8">19 Tem, 16:22</span></div>
+            <div style="font-size:12px;color:#334155;line-height:1.5">Hata staging ortamında yeniden üretildi.</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <input placeholder="Yorum yazın…" style="flex:1;padding:11px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;font-family:inherit;background:#ffffff;outline:none;min-height:44px">
+            <button style="background:#0f766e;color:#ffffff;border:none;border-radius:6px;padding:0 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;min-height:44px">Gönder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="07 Üyeler" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">07 · Üyeler</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Üye listesi, ekleme ve kaldırma</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">Ad soyad önde, userId ikincil (tooltip + kopyalanabilir). Sahip, ownerUserId eşleşmesiyle işaretlenir. Ekleme userId (GUID) ile yapılır. Kaldırma onaylıdır; sahip olmayan kullanıcı ekleme/kaldırma göremez.</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px;width:720px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">SAHİP GÖRÜNÜMÜ — LİSTE + EKLEME</div>
+      <div style="background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><h1 style="margin:0;font-size:18px;font-weight:700">Üyeler</h1><div style="font-size:12px;color:#64748b;margin-top:2px">Web Sitesi Yenileme · 4 üye</div></div>
+          <button style="display:inline-flex;align-items:center;gap:6px;background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Üye ekle</button>
+        </div>
+        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 230px 160px 40px;gap:12px;align-items:center;padding:8px 16px;border-bottom:1px solid #e2e8f0;background:#fbfcfd;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em"><span>Üye</span><span>Kullanıcı ID</span><span>Katılım</span><span></span></div>
+          <div style="display:grid;grid-template-columns:1fr 230px 160px 40px;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #eef2f6">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:6px;background:#e0efec;color:#0f766e;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none">AD</span><span style="font-size:13px;font-weight:600;white-space:nowrap">Ayşe Demir</span><span style="font-size:10.5px;font-weight:700;color:#0f766e;background:#e0efec;border-radius:4px;padding:1px 6px;white-space:nowrap">sahip · siz</span></div>
+            <span title="2c9e4b7a-1f36-4d8c-a2e0-5b91d63f8a12" style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#94a3b8">2c9e4b7a…8a12</span>
+            <span style="font-size:12.5px;color:#475569" title="2026-06-03T09:15:00Z">3 Haz 2026</span>
+            <span></span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 230px 160px 40px;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #eef2f6">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:6px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none">MK</span><span style="font-size:13px;font-weight:600">Mehmet Kaya</span></div>
+            <span title="9b6e2f4a-3c81-47d5-b920-6e1a75c3d208" style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#94a3b8">9b6e2f4a…d208</span>
+            <span style="font-size:12.5px;color:#475569" title="2026-06-05T10:02:00Z">5 Haz 2026</span>
+            <button aria-label="Üyeyi kaldır" title="Üyeyi kaldır" style="border:none;background:transparent;padding:6px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 230px 160px 40px;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #eef2f6">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:6px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none">ZA</span><span style="font-size:13px;font-weight:600">Zeynep Arslan</span></div>
+            <span title="5e0d8a2c-47b9-4c13-9f68-b2d4e7a1c556" style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#94a3b8">5e0d8a2c…c556</span>
+            <span style="font-size:12.5px;color:#475569" title="2026-06-11T08:30:00Z">11 Haz 2026</span>
+            <button aria-label="Üyeyi kaldır" title="Üyeyi kaldır" style="border:none;background:transparent;padding:6px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 230px 160px 40px;gap:12px;align-items:center;padding:11px 16px">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:6px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none">EY</span><span style="font-size:13px;font-weight:600">Emre Yıldız</span></div>
+            <span title="7d1f9c3b-8e42-4a67-b5d0-0c2a84e6f931" style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#94a3b8">7d1f9c3b…f931</span>
+            <span style="font-size:12.5px;color:#475569" title="2026-07-01T13:00:00Z">1 Tem 2026</span>
+            <button aria-label="Üyeyi kaldır" title="Üyeyi kaldır" style="border:none;background:transparent;padding:6px;border-radius:6px;cursor:pointer;display:flex;justify-self:end"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+          </div>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b">üye API'si yalnız userId+joinedAtUtc döndürür; ad soyad, auth/profil önbelleğinden eşlenir — eşleşme yoksa kısaltılmış ID gösterilir. sahip kendini kaldıramaz.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:400px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">ÜYE EKLE + 409 + KALDIRMA ONAYI</div>
+      <div style="background:rgba(15,23,42,0.45);border-radius:8px;padding:28px 24px;display:flex;flex-direction:column;gap:16px">
+        <div role="dialog" aria-label="Üye ekle" style="background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div style="font-size:15px;font-weight:700">Üye ekle</div>
+          <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:9px 11px;font-size:12px;color:#92400e">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+            <span><strong>Bu kullanıcı zaten üye.</strong> Aynı kişiyi ikinci kez ekleyemezsiniz. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px">(409)</span></span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Kullanıcı ID (GUID)</label>
+            <input value="9b6e2f4a-3c81-47d5-b920-6e1a75c3d208" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-family:ui-monospace,Menlo,monospace;color:#334155;background:#ffffff;outline:none">
+            <div style="font-size:11.5px;color:#64748b">Eklenecek kişinin kullanıcı kimliğini yapıştırın. Kullanıcı arama hizmeti yoktur.</div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px"><button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vazgeç</button><button style="background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Ekle</button></div>
+        </div>
+        <div role="alertdialog" aria-label="Üyeyi kaldır" style="background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div style="font-size:15px;font-weight:700">Mehmet Kaya projeden kaldırılsın mı?</div>
+          <div style="font-size:12.5px;color:#475569">Kullanıcı projeye ve görevlerine erişimini kaybeder. Kendisine atanmış görevler atanmamış duruma geçmez.</div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px"><button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vazgeç</button><button style="background:#dc2626;color:#ffffff;border:1px solid #dc2626;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Kaldır</button></div>
+        </div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">üye görünümü (sahip değil): "Üye ekle" ve çöp kutusu render edilmez; başlık altına "Üyeleri yalnızca proje sahibi yönetebilir" notu düşer.</div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="08 Bildirimler" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">08 · Bildirim Merkezi</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Popover, gerçek zamanlı geliş ve bağlantı durumları</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">SignalR ile canlı geliş: toast + zil rozeti. Okunmamışlar sol vurgu noktasıyla ayrılır; tek tek veya tümü okundu işaretlenebilir. Sayfalı "daha fazla yükle".</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px;width:380px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">POPOVER (360px)</div>
+      <div style="background:#f4f6f8;border:1px solid #d3dce4;border-radius:8px;padding:20px;display:flex;justify-content:center">
+        <div role="dialog" aria-label="Bildirimler" style="width:100%;background:#ffffff;border:1px solid #dde4ea;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,0.14);overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #eef2f6">
+            <span style="font-size:13.5px;font-weight:700">Bildirimler <span style="font-size:11px;font-weight:700;color:#ffffff;background:#0f766e;border-radius:8px;padding:1px 7px">3 yeni</span></span>
+            <button style="border:none;background:transparent;color:#0f766e;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px">Tümünü okundu işaretle</button>
+          </div>
+          <div style="display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid #eef2f6;background:#f7fbfa">
+            <span style="width:7px;height:7px;border-radius:50%;background:#0f766e;flex:none;margin-top:5px"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12.5px;color:#0f172a;line-height:1.45"><strong>Mehmet Kaya</strong> size "Ödeme sayfası hata düzeltmesi" görevini atadı.</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:3px" title="2026-07-21T08:12:00Z">12 dk önce · Web Sitesi Yenileme</div>
+            </div>
+            <button aria-label="Okundu işaretle" title="Okundu işaretle" style="border:none;background:transparent;padding:5px;cursor:pointer;border-radius:6px;display:flex;flex:none;align-self:flex-start"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></button>
+          </div>
+          <div style="display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid #eef2f6;background:#f7fbfa">
+            <span style="width:7px;height:7px;border-radius:50%;background:#0f766e;flex:none;margin-top:5px"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12.5px;color:#0f172a;line-height:1.45"><strong>Zeynep Arslan</strong> görevinize yorum ekledi.</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:3px" title="2026-07-21T06:40:00Z">2 sa önce · Web Sitesi Yenileme</div>
+            </div>
+            <button aria-label="Okundu işaretle" title="Okundu işaretle" style="border:none;background:transparent;padding:5px;cursor:pointer;border-radius:6px;display:flex;flex:none;align-self:flex-start"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></button>
+          </div>
+          <div style="display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid #eef2f6">
+            <span style="width:7px;height:7px;flex:none"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12.5px;color:#64748b;line-height:1.45">"Footer bağlantılarını düzelt" görevi tamamlandı.</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:3px" title="2026-07-20T15:04:00Z">Dün · Web Sitesi Yenileme</div>
+            </div>
+          </div>
+          <button style="width:100%;border:none;background:#fbfcfd;color:#0f766e;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:11px;border-top:1px solid #eef2f6">Daha fazla yükle</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;width:380px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">CANLI GELİŞ TOAST'I · YENİDEN BAĞLANMA · BOŞ</div>
+      <div style="background:#f4f6f8;border:1px solid #d3dce4;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div role="status" style="background:#0f172a;color:#f8fafc;border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 8px 24px rgba(15,23,42,0.3)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+          <div style="flex:1"><div style="font-size:12.5px;font-weight:600">Yeni bildirim</div><div style="font-size:12px;color:#cbd5e1;margin-top:2px">Mehmet Kaya size bir görev atadı.</div></div>
+          <button style="border:none;background:transparent;color:#5eead4;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:2px">Görüntüle</button>
+        </div>
+        <div role="status" style="display:flex;align-items:center;gap:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:9px 12px;font-size:12px;color:#92400e">
+          <span style="width:12px;height:12px;border:2px solid #fcd34d;border-top-color:#b45309;border-radius:50%;animation:spin .9s linear infinite;flex:none"></span>
+          <span><strong>Bağlantı koptu.</strong> Yeniden bağlanılıyor… Bağlanınca liste otomatik yenilenir.</span>
+        </div>
+        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:26px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+          <div style="font-size:13px;font-weight:600">Bildiriminiz yok</div>
+          <div style="font-size:12px;color:#64748b">Görev atamaları ve yorumlar burada görünür.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:14px">
+          <div style="height:11px;width:85%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="height:11px;width:60%;border-radius:4px;background:#e6ebf1;animation:shimmer 1.4s ease-in-out infinite"></div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">sayfa yüklenirken skeleton; "Daha fazla yükle" spinner'a döner</div>
+        </div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">tam görünüm: mobilde popover yerine /notifications rotası; aynı NotificationItem bileşeni, tam genişlik.</div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="09 Ayarlar ve Silme" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">09 · Proje Ayarları</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Düzenleme + tehlike bölgesi</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">Yalnızca sahip erişir. Silme, proje adının yazılmasını gerektiren AlertDialog ile onaylanır; tüm görevler, yorumlar ve ekler kalıcı olarak silinir.</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px;width:520px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">AYARLAR SAYFASI</div>
+      <div style="background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:14px;font-weight:700">Proje bilgileri</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Proje adı</label>
+            <input value="Web Sitesi Yenileme" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Açıklama <span style="font-weight:400;color:#94a3b8">(isteğe bağlı)</span></label>
+            <textarea rows="3" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none;resize:vertical">Kurumsal sitenin yeni tasarım ve altyapı geçişi</textarea>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px"><button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vazgeç</button><button style="background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Kaydet</button></div>
+        </div>
+        <div style="background:#ffffff;border:1px solid #fecaca;border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#b91c1c"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>Tehlike bölgesi</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div style="font-size:12.5px;color:#475569">Projeyi silmek tüm görevleri, yorumları ve ekleri kalıcı olarak kaldırır. Bu işlem geri alınamaz.</div>
+            <button style="background:#ffffff;color:#b91c1c;border:1px solid #fca5a5;border-radius:6px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;flex:none">Projeyi sil</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;width:420px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">SİLME ONAYI — AD YAZMA ZORUNLU</div>
+      <div style="background:rgba(15,23,42,0.45);border-radius:8px;padding:36px 26px;display:flex;justify-content:center">
+        <div role="alertdialog" aria-label="Projeyi sil" style="width:100%;background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div style="font-size:15px;font-weight:700;color:#b91c1c">"Web Sitesi Yenileme" silinsin mi?</div>
+          <div style="font-size:12.5px;color:#475569;line-height:1.5">24 görev, 41 yorum ve 9 ek kalıcı olarak silinecek. Bu işlem <strong>geri alınamaz</strong>.</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label style="font-size:12px;font-weight:600;color:#334155">Onaylamak için proje adını yazın</label>
+            <input placeholder="Web Sitesi Yenileme" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none">
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px">
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vazgeç</button>
+            <button disabled="{{ true }}" style="background:#fca5a5;color:#ffffff;border:1px solid #fca5a5;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;font-family:inherit;cursor:not-allowed">Kalıcı olarak sil</button>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">buton, girilen ad birebir eşleşene kadar devre dışıdır</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="10 Global Durumlar" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">10 · Global Durumlar</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">403 · 404 · genel hata · çevrimdışı</h2>
+  </div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap">
+    <div style="width:300px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:32px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <div style="font-size:15px;font-weight:700">Erişim yetkiniz yok</div>
+      <div style="font-size:12.5px;color:#64748b">Bu sayfayı görüntüleme izniniz bulunmuyor. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">(403)</span></div>
+      <a href="#" style="font-size:12.5px;font-weight:600">Projelerime dön</a>
+    </div>
+    <div style="width:300px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:32px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path><path d="M8 11h6"></path></svg>
+      <div style="font-size:15px;font-weight:700">Sayfa bulunamadı</div>
+      <div style="font-size:12.5px;color:#64748b">Aradığınız kaynak yok ya da erişiminiz kaldırılmış olabilir. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">(404)</span></div>
+      <a href="#" style="font-size:12.5px;font-weight:600">Projelerime dön</a>
+    </div>
+    <div style="width:300px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:32px 22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+      <div style="font-size:15px;font-weight:700">Bir şeyler ters gitti</div>
+      <div style="font-size:12.5px;color:#64748b">Beklenmeyen bir hata oluştu. Sorun sürerse daha sonra tekrar deneyin.</div>
+      <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit">Tekrar dene</button>
+    </div>
+    <div style="width:300px;display:flex;flex-direction:column;gap:12px">
+      <div role="status" style="display:flex;align-items:center;gap:8px;background:#0f172a;color:#f8fafc;border-radius:8px;padding:10px 14px;font-size:12.5px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 20h.01"></path><path d="M8.5 16.4a5 5 0 0 1 7 0"></path><path d="M5 12.9a10 10 0 0 1 5.2-2.7"></path><path d="M19 12.9a10 10 0 0 0-2-1.5"></path><path d="m2 2 20 20"></path></svg>
+        <span><strong>Çevrimdışısınız.</strong> Değişiklikler bağlantı gelince gönderilir.</span>
+      </div>
+      <div role="status" style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:6px;padding:9px 12px;font-size:12px;color:#15803d">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg>
+        <span><strong>Bağlantı kuruldu.</strong> Veriler yenilendi.</span>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">çevrimdışı bandı üst barın altına yapışır; oturum-süresi-doldu durumu §01'de.</div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="11 Kullanıcı Yönetimi" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px;border-bottom:1px solid #d8dfe6">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">11 · Kullanıcı Yönetimi (SuperAdmin)</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Kullanıcı listesi ve rol yönetimi</h2>
+    <p style="margin:0;font-size:13px;color:#475569;max-width:760px">Yalnız SuperAdmin görür; kenar çubuğunda proje gezinimin ALTINDA ayrı "Yönetim" bölümü olarak render edilir, diğer rollerde hiç yoktur. Sayfalı arama (page, pageSize, search) desteklenir. Rol değişikliği hedef kullanıcının oturumunu sonlandırır; son SuperAdmin kaldırılamaz (409). Proje üyeliğinden tamamen ayrıdır.</p>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px;width:880px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">KULLANICI LİSTESİ — ARAMA + SAYFALAMA</div>
+      <div style="background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <div><h1 style="margin:0;font-size:18px;font-weight:700">Kullanıcı yönetimi</h1><div style="font-size:12px;color:#64748b;margin-top:2px">Sistem rolleri · 38 kullanıcı</div></div>
+          <div style="position:relative;width:280px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:10px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input placeholder="Kullanıcı adı veya e-posta ara…" style="width:100%;padding:7px 10px 7px 32px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;font-family:inherit;background:#ffffff;outline:none">
+          </div>
+        </div>
+        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:140px minmax(0,1fr) 140px 200px 110px;gap:12px;align-items:center;padding:8px 16px;border-bottom:1px solid #e2e8f0;background:#fbfcfd;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.05em"><span>Kullanıcı adı</span><span>E-posta</span><span>Görünen ad</span><span>Roller</span><span></span></div>
+          <div style="display:grid;grid-template-columns:140px minmax(0,1fr) 140px 200px 110px;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #eef2f6">
+            <span style="font-size:13px;font-weight:600">aysedemir</span>
+            <span style="font-size:12.5px;color:#475569">ayse@ornek.com</span>
+            <span style="font-size:12.5px;color:#334155">Ayşe Demir</span>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:11px;font-weight:600;background:#e0efec;color:#0f766e;border:1px solid #cce4df;border-radius:6px;padding:1px 7px;white-space:nowrap">SuperAdmin</span><span style="font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:1px 7px;white-space:nowrap">Member</span></div>
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;justify-self:end;white-space:nowrap">Rolleri yönet</button>
+          </div>
+          <div style="display:grid;grid-template-columns:140px minmax(0,1fr) 140px 200px 110px;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #eef2f6">
+            <span style="font-size:13px;font-weight:600">mehmetkaya</span>
+            <span style="font-size:12.5px;color:#475569">mehmet@ornek.com</span>
+            <span style="font-size:12.5px;color:#334155">Mehmet Kaya</span>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:11px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:6px;padding:1px 7px;white-space:nowrap">ProjectManager</span></div>
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;justify-self:end;white-space:nowrap">Rolleri yönet</button>
+          </div>
+          <div style="display:grid;grid-template-columns:140px minmax(0,1fr) 140px 200px 110px;gap:12px;align-items:center;padding:11px 16px;border-bottom:1px solid #eef2f6">
+            <span style="font-size:13px;font-weight:600">zeyneparslan</span>
+            <span style="font-size:12.5px;color:#475569">zeynep@ornek.com</span>
+            <span style="font-size:12.5px;color:#94a3b8;font-style:italic">—</span>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:1px 7px;white-space:nowrap">Member</span></div>
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;justify-self:end;white-space:nowrap">Rolleri yönet</button>
+          </div>
+          <div style="display:grid;grid-template-columns:140px minmax(0,1fr) 140px 200px 110px;gap:12px;align-items:center;padding:11px 16px">
+            <span style="font-size:13px;font-weight:600">emreyildiz</span>
+            <span style="font-size:12.5px;color:#475569">emre@ornek.com</span>
+            <span style="font-size:12.5px;color:#334155">Emre Yıldız</span>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span style="font-size:11px;font-weight:600;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:6px;padding:1px 7px;white-space:nowrap">Admin</span><span style="font-size:11px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:1px 7px;white-space:nowrap">Member</span></div>
+            <button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;justify-self:end;white-space:nowrap">Rolleri yönet</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #e2e8f0;background:#fbfcfd">
+            <span style="font-size:12px;color:#64748b">38 kullanıcıdan 1–10 gösteriliyor</span>
+            <div style="display:flex;align-items:center;gap:4px">
+              <button disabled="{{ true }}" aria-label="Önceki sayfa" style="border:1px solid #e2e8f0;background:#f8fafc;color:#cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:600;font-family:inherit;cursor:not-allowed">‹</button>
+              <button style="border:1px solid #0f766e;background:#0f766e;color:#ffffff;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">1</button>
+              <button style="border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">2</button>
+              <button style="border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">3</button>
+              <button style="border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">4</button>
+              <button aria-label="Sonraki sayfa" style="border:1px solid #cbd5e1;background:#ffffff;color:#334155;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer">›</button>
+            </div>
+          </div>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">GET /api/admin/users?page&pageSize&search — arama debounce 300ms; sonuç yoksa "'{arama}' ile eşleşen kullanıcı yok + Aramayı temizle". profil isimleri (§06/07) bu uç noktadan önbelleğe alınır.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:420px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">ROL DİYALOĞU — CHECKBOX + 409 KORUMASI</div>
+      <div style="background:rgba(15,23,42,0.45);border-radius:8px;padding:28px 24px;display:flex;flex-direction:column;gap:16px">
+        <div role="dialog" aria-label="Rolleri yönet" style="background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div><div style="font-size:15px;font-weight:700">Rolleri yönet</div><div style="font-size:12px;color:#64748b;margin-top:2px">mehmetkaya · mehmet@ornek.com</div></div>
+          <div role="status" style="display:flex;gap:8px;align-items:flex-start;background:#eff6ff;border:1px solid #dbeafe;border-radius:6px;padding:9px 11px;font-size:12px;color:#1d4ed8">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+            <span>Kaydedildiğinde kullanıcının mevcut oturumu sonlandırılır; yeniden giriş yapması gerekir.</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer"><input type="checkbox" style="width:15px;height:15px;accent-color:#0f766e"><span style="font-size:13px;font-weight:600">SuperAdmin</span><span style="font-size:11.5px;color:#64748b">— sistem ve kullanıcı yönetimi</span></label>
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer"><input type="checkbox" style="width:15px;height:15px;accent-color:#0f766e"><span style="font-size:13px;font-weight:600">Admin</span><span style="font-size:11.5px;color:#64748b">— tüm projelerde tam yetki</span></label>
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:#f7fbfa;cursor:pointer"><input type="checkbox" checked="{{ true }}" style="width:15px;height:15px;accent-color:#0f766e"><span style="font-size:13px;font-weight:600">ProjectManager</span><span style="font-size:11.5px;color:#64748b">— proje oluşturma/yönetme</span></label>
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer"><input type="checkbox" style="width:15px;height:15px;accent-color:#0f766e"><span style="font-size:13px;font-weight:600">Member</span><span style="font-size:11.5px;color:#64748b">— üyesi olduğu projelerde çalışma</span></label>
+          </div>
+          <div role="alert" style="display:flex;align-items:center;gap:5px;font-size:12px;color:#b91c1c"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>En az bir rol seçilmelidir.</div>
+          <div style="display:flex;justify-content:flex-end;gap:8px"><button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vazgeç</button><button style="background:#0f766e;color:#ffffff;border:1px solid #0f766e;border-radius:6px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Kaydet</button></div>
+        </div>
+        <div style="background:#ffffff;border:1px solid #dde4ea;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px rgba(15,23,42,0.2)">
+          <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:9px 11px;font-size:12px;color:#b91c1c">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+            <span><strong>Son SuperAdmin kaldırılamaz.</strong> Önce başka bir kullanıcıya SuperAdmin rolü verin. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px">(409)</span></span>
+          </div>
+          <div role="alert" style="display:flex;gap:8px;align-items:flex-start;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:9px 11px;font-size:12px;color:#b91c1c">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+            <span><strong>Kullanıcı bulunamadı.</strong> Silinmiş olabilir; liste yenilenecek. <span style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px">(404)</span></span>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">kaydet: spinner + "Kaydediliyor…"; başarıda toast "Roller güncellendi, oturum sonlandırıldı"</div>
+        </div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#64748b;line-height:1.6">kenar çubuğu (yalnız SuperAdmin): alt kısımda "YÖNETİM" başlığı altında "Kullanıcılar" bağlantısı (Shield ikonu). diğer roller için rota da 404 döner.</div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="12 Envanter" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">12 · Bileşen Envanteri</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Ekran → bileşen eşlemesi</h2>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="background:#ffffff;border:1px solid #d8dfe6;border-radius:8px;padding:20px;width:460px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:13px;font-weight:700">Katmanlar</div>
+      <div style="font-size:12.5px;color:#334155;line-height:1.7">
+        <strong>1 · Token:</strong> renk, tipografi, spacing, radius (6/8), kenarlık, gölge, kırılımlar (sm 640 · md 768 · lg 1024)<br>
+        <strong>2 · Primitif (shadcn):</strong> Button, Input, Textarea, Label, Select, Checkbox, Badge, Tooltip, Dialog, AlertDialog, Sheet, DropdownMenu, Table, Tabs, Progress, Skeleton, Toast, Pagination, FormField<br>
+        <strong>3 · Kompozit:</strong> AppShell, SidebarNav, MobileNav, PageHeader, Breadcrumbs, DataTable, FilterBar, EmptyState, ErrorState, LoadingState, ConfirmDialog, ProblemDetailsAlert, StatusBadge, PriorityBadge, UserDisplay, DateDisplay, NotificationItem, FileAttachmentItem<br>
+        <strong>4 · Özellik:</strong> LoginForm, RegisterForm, ProjectForm/List/Summary, TaskForm/List/Detail, MemberList/Form, CommentList/Composer, AttachmentList, NotificationCenter; ayrı yönetim özelliği: AdminUserList, RoleForm<br>
+        <strong>5 · Rota sayfaları:</strong> yalnız kompozisyon; API/iş durumu hook'larda, sunum bileşenleri saf props
+      </div>
+    </div>
+    <div style="background:#ffffff;border:1px solid #d8dfe6;border-radius:8px;padding:20px;width:560px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:13px;font-weight:700">Ekran → bileşen</div>
+      <div style="display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:12px;color:#334155;line-height:1.6">
+        <span style="font-weight:600">01 Giriş/Kayıt</span><span>FormField, Input, Button, ProblemDetailsAlert</span>
+        <span style="font-weight:600">02 Proje listesi</span><span>AppShell, PageHeader, DataTable, Dialog(ProjectForm), EmptyState, ErrorState, LoadingState, UserDisplay, DateDisplay</span>
+        <span style="font-weight:600">03 Genel bakış</span><span>AppShell, Breadcrumbs, Progress, StatCard, DataTable(geciken), PriorityBadge, UserDisplay</span>
+        <span style="font-weight:600">04 Görevler</span><span>FilterBar, DataTable(sıralama+Pagination), StatusBadge, PriorityBadge, UserDisplay, EmptyState×2, ErrorState, RateLimitAlert</span>
+        <span style="font-weight:600">05 Görev formu</span><span>Dialog, FormField, Select, DatePicker, ConfirmDialog(kirli form), ProblemDetailsAlert(409)</span>
+        <span style="font-weight:600">06 Görev detayı</span><span>Sheet, StatusBadge, PriorityBadge, UserDisplay, DateDisplay, CommentList+Composer, FileAttachmentItem, Progress(yükleme)</span>
+        <span style="font-weight:600">07 Üyeler</span><span>DataTable, UserDisplay, Dialog(GUID girişi), ConfirmDialog, ProblemDetailsAlert(409)</span>
+        <span style="font-weight:600">08 Bildirimler</span><span>Popover, NotificationItem, Toast, Skeleton, durum bandı</span>
+        <span style="font-weight:600">09 Ayarlar</span><span>FormField, tehlike bölgesi, AlertDialog(ad doğrulamalı)</span>
+        <span style="font-weight:600">10 Global</span><span>ErrorState varyantları, çevrimdışı/yeniden bağlanma bantları</span>
+        <span style="font-weight:600">11 Kullanıcı yön.</span><span>DataTable(arama+Pagination), RoleBadge, Dialog(RoleForm, Checkbox), ProblemDetailsAlert(404/409), Toast</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="13 Tamamlayıcı Tasarımlar" style="display:flex;flex-direction:column;gap:20px;padding:48px 56px">
+  <div>
+    <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#0f766e;text-transform:uppercase">13 · Tamamlayıcı Tasarımlar</div>
+    <h2 style="margin:6px 0 4px;font-size:22px;font-weight:700;letter-spacing:-0.01em">Hesap menüsü · satır eylemleri · hata matrisi · başarı geri bildirimi · eksik mobil varyantlar</h2>
+  </div>
+
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:8px;width:280px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">HESAP MENÜSÜ + SUPERADMIN SIDEBAR</div>
+      <div style="background:#f4f6f8;border:1px solid #d3dce4;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px">
+        <div role="menu" aria-label="Hesap menüsü" style="background:#ffffff;border:1px solid #dde4ea;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,0.14);overflow:hidden;width:220px">
+          <div style="padding:10px 12px;border-bottom:1px solid #eef2f6">
+            <div style="font-size:12.5px;font-weight:700">Ayşe Demir</div>
+            <div style="font-size:11.5px;color:#64748b">@aysedemir · ayse@ornek.com</div>
+            <div style="display:flex;gap:4px;margin-top:6px"><span style="font-size:10.5px;font-weight:600;background:#e0efec;color:#0f766e;border:1px solid #cce4df;border-radius:6px;padding:1px 6px">SuperAdmin</span><span style="font-size:10.5px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:1px 6px">Member</span></div>
+          </div>
+          <button role="menuitem" style="width:100%;display:flex;align-items:center;gap:9px;border:none;background:transparent;padding:10px 12px;font-size:12.5px;font-weight:600;color:#b91c1c;cursor:pointer;font-family:inherit;text-align:left">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path></svg>
+            Çıkış yap
+          </button>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b;line-height:1.6">sidebar alt alanındaki "…" ve üst bardaki kullanıcı adı aynı DropdownMenu'yu açar. profil düzenleme endpoint'i yok → yalnız kimlik özeti + roller (auth yanıtından) + Çıkış. çıkış: token temizle → /login.</div>
+        <div style="border:1px solid #dde4ea;border-radius:8px;overflow:hidden;height:400px;background:#ffffff">
+          <dc-import name="Sidebar" active="admin" super-admin="{{ true }}" style="width:100%;height:400px" hint-size="248px,400px"></dc-import>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b">SuperAdmin varyantı: "YÖNETİM › Kullanıcılar" bölümü; diğer rollerde render edilmez.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:280px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">PROJE SATIRI EYLEM MENÜSÜ</div>
+      <div style="background:#f4f6f8;border:1px solid #d3dce4;border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px">
+        <div role="menu" aria-label="Proje eylemleri" style="background:#ffffff;border:1px solid #dde4ea;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,0.14);overflow:hidden;width:190px">
+          <button role="menuitem" style="width:100%;display:flex;align-items:center;gap:9px;border:none;background:transparent;padding:9px 12px;font-size:12.5px;font-weight:500;color:#334155;cursor:pointer;font-family:inherit;text-align:left"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>Aç</button>
+          <button role="menuitem" style="width:100%;display:flex;align-items:center;gap:9px;border:none;background:transparent;padding:9px 12px;font-size:12.5px;font-weight:500;color:#334155;cursor:pointer;font-family:inherit;text-align:left"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>Düzenle</button>
+          <div style="height:1px;background:#eef2f6"></div>
+          <button role="menuitem" style="width:100%;display:flex;align-items:center;gap:9px;border:none;background:transparent;padding:9px 12px;font-size:12.5px;font-weight:600;color:#b91c1c;cursor:pointer;font-family:inherit;text-align:left"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>Sil</button>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b;line-height:1.6">Düzenle → §02'deki proje diyaloğu (dolu değerlerle); Sil → §09'daki ad doğrulamalı onay. sahip değilse Düzenle/Sil render edilmez, yalnız "Aç" kalır. görev satırı menüsü aynı desen: Aç · Düzenle · Sil (onaylı).</div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em;margin-top:4px">BAŞARI GERİ BİLDİRİMİ (Toast seti)</div>
+        <div role="status" style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:6px;padding:9px 12px;font-size:12px;color:#15803d"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg><span><strong>Görev oluşturuldu.</strong> Listeye eklendi.</span></div>
+        <div role="status" style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:6px;padding:9px 12px;font-size:12px;color:#15803d"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg><span><strong>Değişiklikler kaydedildi.</strong></span></div>
+        <div role="status" style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #dcfce7;border-radius:6px;padding:9px 12px;font-size:12px;color:#15803d"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M20 6 9 17l-5-5"></path></svg><span><strong>Proje silindi.</strong> Proje listesine dönüldü.</span></div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#64748b;line-height:1.6">tüm mutasyon başarıları aynı yeşil toast deseni; 4 sn sonra kapanır, ekran okuyucuya role=status ile duyurulur. silme sonrası yönlendirme + toast birlikte.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:460px;flex:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">HATA GÖSTERİM MATRİSİ</div>
+      <div style="background:#ffffff;border:1px solid #d8dfe6;border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:grid;grid-template-columns:64px 1fr;gap:8px 14px;font-size:12px;color:#334155;line-height:1.55">
+          <span style="font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#b91c1c">400</span><span>Alan hataları → ilgili FormField altına satır içi mesaj (role=alert); alansız doğrulama → form üstü kırmızı ProblemDetailsAlert</span>
+          <span style="font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#b91c1c">401</span><span>Girişte: form üstü hata (§01). Oturum içinde: oturum-süresi-doldu bandı + /login yönlendirme, dönüş URL'si korunur</span>
+          <span style="font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#b91c1c">403</span><span>Tam sayfa ErrorState "Erişim yetkiniz yok" (§10); eylem bazlıysa buton gizlenir, bağlam gerekiyorsa tooltip ile açıklanır</span>
+          <span style="font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#b91c1c">404</span><span>Tam sayfa "Sayfa bulunamadı" (§10) — erişilemeyen kaynağı da temsil edebilir; diyalog içinde alert + liste yenileme (§11)</span>
+          <span style="font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#92400e">409</span><span>Bağlama özgü amber alert: görev çakışması (§05), yinelenen üye (§07), son SuperAdmin (§11)</span>
+          <span style="font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#92400e">429</span><span>Amber alert + Retry-After geri sayımı; geri sayım bitene dek yeniden-dene devre dışı (§04)</span>
+          <span style="font-family:ui-monospace,Menlo,monospace;font-weight:600;color:#475569">Ağ</span><span>Koyu çevrimdışı bandı + otomatik yeniden deneme; bağlanınca yeşil "yenilendi" durumu (§10)</span>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8;border-top:1px solid #eef2f6;padding-top:8px">tek kaynak: ProblemDetailsAlert — severity (red/amber) + başlık + detay + isteğe bağlı eylem; tüm ekranlar bunu kullanır</div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em;margin-top:8px">EK LİSTESİ SAYFALAMASI</div>
+      <div style="background:#ffffff;border:1px solid #d8dfe6;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;border:1px solid #e8edf2;border-radius:8px;padding:9px 12px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+          <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">tasarim-notlari.pdf</div><div style="font-size:11px;color:#64748b">PDF · 1,8 MB · 14 Tem 2026 · Zeynep Arslan</div></div>
+          <button aria-label="İndir" title="İndir" style="border:1px solid #cbd5e1;background:#ffffff;padding:6px;border-radius:6px;cursor:pointer;display:flex;flex:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path><path d="M12 15V3"></path></svg></button>
+        </div>
+        <button style="align-self:flex-start;background:transparent;border:none;color:#0f766e;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:0">Daha fazla ek yükle (2 / 9)</button>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#94a3b8">yorumlarla aynı desen: sayfa başına 5, "daha fazla" spinner'a döner; boş durum: "Henüz ek yok — dosya sürükleyin veya yükleyin."</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:600;color:#475569;letter-spacing:0.06em">EKSİK MOBİL VARYANTLAR (390 → 300px önizleme)</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+        <div style="width:300px;background:#f4f6f8;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;flex:none">
+          <div style="padding:24px 20px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:8px"><div style="width:22px;height:22px;border-radius:6px;background:#0f766e;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></div><span style="font-size:14px;font-weight:700">TaskManagement</span></div>
+            <div style="font-size:15px;font-weight:700">Oturum aç</div>
+            <input placeholder="Kullanıcı adı veya e-posta" style="width:100%;padding:11px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none;min-height:44px">
+            <input type="password" placeholder="Parola" style="width:100%;padding:11px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none;min-height:44px">
+            <button style="background:#0f766e;color:#ffffff;border:none;border-radius:6px;padding:12px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;min-height:44px">Oturum aç</button>
+            <div style="font-size:12px;color:#64748b;text-align:center">Hesabınız yok mu? <a href="#" style="font-weight:600">Kayıt olun</a></div>
+          </div>
+          <div style="padding:8px 12px;background:#eef2f6;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#64748b">GİRİŞ — tek sütun, tüm hedefler ≥44px; kayıt aynı desen</div>
+        </div>
+        <div style="width:300px;background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;flex:none">
+          <div style="height:44px;display:flex;align-items:center;gap:6px;padding:0 8px;background:#ffffff;border-bottom:1px solid #e2e8f0">
+            <button aria-label="Menü" style="border:none;background:transparent;padding:9px;display:flex;cursor:pointer;min-width:40px;min-height:40px;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg></button>
+            <span style="font-size:13px;font-weight:700;flex:1">Üyeler</span>
+            <button style="border:none;background:#0f766e;color:#ffffff;border-radius:6px;min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+          </div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;display:flex;align-items:center;gap:9px">
+              <span style="width:26px;height:26px;border-radius:6px;background:#e0efec;color:#0f766e;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none">AD</span>
+              <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600;white-space:nowrap">Ayşe Demir <span style="font-size:10px;font-weight:700;color:#0f766e;background:#e0efec;border-radius:4px;padding:1px 5px">sahip</span></div><div style="font-size:10.5px;color:#94a3b8">Katılım: 3 Haz 2026</div></div>
+            </div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;display:flex;align-items:center;gap:9px">
+              <span style="width:26px;height:26px;border-radius:6px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex:none">MK</span>
+              <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">Mehmet Kaya</div><div style="font-size:10.5px;color:#94a3b8">Katılım: 5 Haz 2026</div></div>
+              <button aria-label="Üyeyi kaldır" style="border:none;background:transparent;padding:9px;display:flex;cursor:pointer;min-width:40px;min-height:40px;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b91c1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+            </div>
+          </div>
+          <div style="padding:8px 12px;background:#eef2f6;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#64748b">ÜYELER — kart satırları; kaldır onayı aynı AlertDialog</div>
+        </div>
+        <div style="width:300px;background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;flex:none">
+          <div style="height:44px;display:flex;align-items:center;gap:6px;padding:0 8px;background:#ffffff;border-bottom:1px solid #e2e8f0">
+            <button aria-label="Geri" style="border:none;background:transparent;padding:9px;display:flex;cursor:pointer;min-width:40px;min-height:40px;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+            <span style="font-size:13px;font-weight:700;flex:1">Bildirimler</span>
+            <button style="border:none;background:transparent;color:#0f766e;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;padding:8px">Tümünü okundu işaretle</button>
+          </div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
+            <div style="background:#f7fbfa;border:1px solid #cce4df;border-radius:8px;padding:10px;display:flex;gap:8px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#0f766e;flex:none;margin-top:4px"></span>
+              <div style="flex:1"><div style="font-size:12px;line-height:1.45"><strong>Mehmet Kaya</strong> size bir görev atadı.</div><div style="font-size:10.5px;color:#94a3b8;margin-top:2px">12 dk önce</div></div>
+            </div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;display:flex;gap:8px">
+              <span style="width:7px;height:7px;flex:none"></span>
+              <div style="flex:1"><div style="font-size:12px;color:#64748b;line-height:1.45">"Footer bağlantılarını düzelt" tamamlandı.</div><div style="font-size:10.5px;color:#94a3b8;margin-top:2px">Dün</div></div>
+            </div>
+            <button style="background:transparent;border:none;color:#0f766e;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:10px;min-height:44px">Daha fazla yükle</button>
+          </div>
+          <div style="padding:8px 12px;background:#eef2f6;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#64748b">BİLDİRİMLER — mobilde popover yerine /notifications tam sayfası; okunmamışa dokunma = okundu işaretle</div>
+        </div>
+        <div style="width:300px;background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;flex:none">
+          <div style="height:44px;display:flex;align-items:center;gap:6px;padding:0 8px;background:#ffffff;border-bottom:1px solid #e2e8f0">
+            <button aria-label="Geri" style="border:none;background:transparent;padding:9px;display:flex;cursor:pointer;min-width:40px;min-height:40px;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+            <span style="font-size:13px;font-weight:700;flex:1">Proje ayarları</span>
+          </div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:10px">
+            <input value="Web Sitesi Yenileme" style="width:100%;padding:11px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;font-family:inherit;background:#ffffff;outline:none;min-height:44px">
+            <textarea rows="2" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;font-family:inherit;color:#0f172a;background:#ffffff;outline:none;resize:none">Kurumsal sitenin yeni tasarım ve altyapı geçişi</textarea>
+            <button style="background:#0f766e;color:#ffffff;border:none;border-radius:6px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;min-height:44px">Kaydet</button>
+            <div style="border:1px solid #fecaca;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;background:#ffffff">
+              <div style="font-size:12px;font-weight:700;color:#b91c1c">Tehlike bölgesi</div>
+              <button style="background:#ffffff;color:#b91c1c;border:1px solid #fca5a5;border-radius:6px;padding:11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;min-height:44px">Projeyi sil</button>
+            </div>
+          </div>
+          <div style="padding:8px 12px;background:#eef2f6;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#64748b">AYARLAR — silme onayı aynı ad-doğrulamalı diyalog (tam ekrana yakın açılır)</div>
+        </div>
+        <div style="width:300px;background:#f8fafc;border:1px solid #d3dce4;border-radius:8px;overflow:hidden;flex:none">
+          <div style="height:44px;display:flex;align-items:center;gap:6px;padding:0 8px;background:#ffffff;border-bottom:1px solid #e2e8f0">
+            <button aria-label="Menü" style="border:none;background:transparent;padding:9px;display:flex;cursor:pointer;min-width:40px;min-height:40px;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg></button>
+            <span style="font-size:13px;font-weight:700;flex:1">Kullanıcı yönetimi</span>
+          </div>
+          <div style="padding:10px;display:flex;flex-direction:column;gap:8px">
+            <input placeholder="Kullanıcı ara…" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;font-family:inherit;background:#ffffff;outline:none;min-height:44px">
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12.5px;font-weight:600">mehmetkaya</span><button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;min-height:36px">Roller</button></div>
+              <div style="font-size:11px;color:#64748b">mehmet@ornek.com · Mehmet Kaya</div>
+              <div style="display:flex;gap:4px"><span style="font-size:10.5px;font-weight:600;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:6px;padding:1px 6px">ProjectManager</span></div>
+            </div>
+            <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12.5px;font-weight:600">zeyneparslan</span><button style="background:#ffffff;color:#334155;border:1px solid #cbd5e1;border-radius:6px;padding:7px 10px;font-size:11.5px;font-weight:600;cursor:pointer;font-family:inherit;min-height:36px">Roller</button></div>
+              <div style="font-size:11px;color:#64748b">zeynep@ornek.com</div>
+              <div style="display:flex;gap:4px"><span style="font-size:10.5px;font-weight:600;background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:1px 6px">Member</span></div>
+            </div>
+          </div>
+          <div style="padding:8px 12px;background:#eef2f6;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:#64748b">KULLANICI YÖN. — kart satırları; rol diyaloğu aynı checkbox deseni</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section></x-dc>
+</body>
+</html>

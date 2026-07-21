@@ -96,6 +96,31 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager) : 
             .ToDictionaryAsync(summary => summary.Id, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<UserSummaryResponse>> SearchUsersAsync(
+        string search,
+        int limit,
+        CancellationToken cancellationToken)
+    {
+        // NormalizedUserName is indexed and already upper-cased by Identity, so the
+        // user-name half of the match stays sargable. DisplayName has no normalized
+        // column, hence the explicit case-insensitive comparison.
+        string normalized = userManager.NormalizeName(search);
+
+        return await userManager.Users
+            .AsNoTracking()
+            .Where(user =>
+                (user.NormalizedUserName != null && user.NormalizedUserName.Contains(normalized))
+                || (user.DisplayName != null
+                    && EF.Functions.ILike(user.DisplayName, $"%{search}%")))
+            .OrderBy(user => user.DisplayName ?? user.UserName)
+            .Take(limit)
+            .Select(user => new UserSummaryResponse(
+                user.Id,
+                user.UserName ?? string.Empty,
+                user.DisplayName))
+            .ToListAsync(cancellationToken);
+    }
+
     private async Task<UserResponse> MapAsync(ApplicationUser user)
     {
         IList<string> roles = await userManager.GetRolesAsync(user);

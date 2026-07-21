@@ -9,6 +9,7 @@ using TaskManagement.Application.Projects;
 using TaskManagement.Application.Statistics;
 using TaskManagement.Application.Tasks;
 using TaskManagement.Application.Notifications;
+using TaskManagement.Application.Users;
 using TaskManagement.Application.Validation;
 using TaskManagement.Application.Abstractions;
 using TaskManagement.Application.Administration;
@@ -32,8 +33,10 @@ public static class DependencyInjection
         services.AddScoped<IValidator<ReplaceUserRolesRequest>, ReplaceUserRolesRequestValidator>();
         services.AddScoped<IValidator<CreateCommentRequest>, CreateCommentRequestValidator>();
         services.AddScoped<IValidator<CommentListQuery>, CommentListQueryValidator>();
+        services.AddScoped<IValidator<UserSearchQuery>, UserSearchQueryValidator>();
         services.AddScoped<AuthService>();
         services.AddScoped<UserAdministrationService>();
+        services.AddScoped<UserDirectoryService>();
         services.AddScoped<ProjectAuthorizationService>();
         services.AddScoped<ProjectService>();
         services.AddScoped<TaskService>();

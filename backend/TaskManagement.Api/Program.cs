@@ -43,6 +43,13 @@ builder.Services
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+// The OpenAPI document generator reads Microsoft.AspNetCore.Http.Json options, not
+// the MVC options above; without this the schema advertises integer enums while the
+// API serializes strings.
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 // Stops an oversized upload at the transport layer instead of buffering it only to
 // have AttachmentService reject it. The headroom covers multipart boundary overhead
 // so a file exactly on the limit still reaches the application-level check and gets a

@@ -21,4 +21,11 @@ public interface IIdentityService
     Task<IReadOnlyDictionary<Guid, UserSummaryResponse>> GetUserSummariesAsync(
         IReadOnlyCollection<Guid> userIds,
         CancellationToken cancellationToken);
+
+    // Prefix/contains search over user name and display name, capped by the caller.
+    // Returns the same safe projection: no e-mail and no roles.
+    Task<IReadOnlyCollection<UserSummaryResponse>> SearchUsersAsync(
+        string search,
+        int limit,
+        CancellationToken cancellationToken);
 }

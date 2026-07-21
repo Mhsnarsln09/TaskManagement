@@ -93,7 +93,7 @@ public sealed class ProjectRepository(ApplicationDbContext dbContext) : IProject
             .Where(member => member.ProjectId == projectId)
             .OrderBy(member => member.JoinedAtUtc)
             .ThenBy(member => member.Id)
-            .Select(member => new ProjectMemberResponse(member.UserId, member.JoinedAtUtc))
+            .Select(member => new ProjectMemberResponse(member.UserId, null, member.JoinedAtUtc))
             .ToListAsync(cancellationToken);
     }
 

@@ -67,7 +67,22 @@ public sealed class ProjectService(
         CancellationToken cancellationToken)
     {
         await projectAuthorization.EnsureMemberAsync(id, cancellationToken);
-        return await projectRepository.ListMembersAsync(id, cancellationToken);
+
+        IReadOnlyCollection<ProjectMemberResponse> members =
+            await projectRepository.ListMembersAsync(id, cancellationToken);
+
+        // One round trip for every member, mirroring how comment authors are resolved.
+        IReadOnlyDictionary<Guid, UserSummaryResponse> summaries =
+            await identityService.GetUserSummariesAsync(
+                members.Select(member => member.UserId).Distinct().ToArray(),
+                cancellationToken);
+
+        return members
+            .Select(member => member with
+            {
+                User = summaries.GetValueOrDefault(member.UserId)
+            })
+            .ToArray();
     }
 
     public async Task<ProjectMemberResponse> AddMemberAsync(
@@ -93,7 +108,14 @@ public sealed class ProjectService(
         await projectRepository.SaveChangesAsync(cancellationToken);
 
         ProjectMember member = project.Members.Single(member => member.UserId == request.UserId);
-        return new ProjectMemberResponse(member.UserId, member.JoinedAtUtc);
+
+        IReadOnlyDictionary<Guid, UserSummaryResponse> summaries =
+            await identityService.GetUserSummariesAsync([member.UserId], cancellationToken);
+
+        return new ProjectMemberResponse(
+            member.UserId,
+            summaries.GetValueOrDefault(member.UserId),
+            member.JoinedAtUtc);
     }
 
     public async Task RemoveMemberAsync(Guid id, Guid userId, CancellationToken cancellationToken)

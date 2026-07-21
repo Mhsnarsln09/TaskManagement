@@ -72,8 +72,17 @@ public sealed class AuthenticationFlowTests(TaskManagementApiFactory factory)
         using JsonDocument payload = JsonDocument.Parse(await login.Content.ReadAsStringAsync());
         string token = payload.RootElement.GetProperty("accessToken").GetString()!;
 
-        // Flipping the last character of the signature must invalidate the token.
-        string tampered = token[..^1] + (token[^1] == 'a' ? 'b' : 'a');
+        // The signature's FIRST character is mutated, not the last one: a 32-byte
+        // HS256 signature is 43 base64url characters, so the final character's two
+        // low bits are padding and are discarded when decoding. Swapping 'a' for 'b'
+        // there leaves the decoded signature byte-identical and the token valid,
+        // which made this test fail whenever the signature happened to end in a/b.
+        int signatureStart = token.LastIndexOf('.') + 1;
+        char original = token[signatureStart];
+        string tampered = string.Concat(
+            token.AsSpan(0, signatureStart),
+            (original == 'A' ? 'B' : 'A').ToString(),
+            token.AsSpan(signatureStart + 1));
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tampered);
 
         HttpResponseMessage response = await client.GetAsync("/api/projects");
