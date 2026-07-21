@@ -9,6 +9,7 @@ shadcn/ui ve Lucide icons. Ürün kapsamı, entegrasyon sözleşmesi ve görevle
 
 - Node.js 22+
 - Çalışan backend API (`http://localhost:8080`) — bkz. `../backend`
+- Docker ile tüm stack için `../backend/compose.yml`
 
 ## Kurulum ve geliştirme
 
@@ -23,10 +24,20 @@ Backend'i yerelde çalıştırmak için (Docker ile Postgres + Redis):
 ```bash
 cd ../backend
 docker compose up -d postgres redis
-# Redis compose içinde host portu yayınlamaz; yerel API için ayrıca:
-docker run -d --name taskmanagement-redis-local -p 6379:6379 redis:8-alpine
 dotnet run --project TaskManagement.Api   # .env'deki bağlantı bilgileriyle
 ```
+
+Frontend'i de Docker'dan kaldırmak için aynı compose dosyasında `frontend`
+servisini hedefleyin:
+
+```bash
+cd ../backend
+cp .env.example .env
+docker compose up -d --build frontend
+```
+
+Bu komut frontend'i başlatırken API, Postgres ve Redis servislerini de
+zincirleme başlatır.
 
 ## Komutlar
 
