@@ -36,6 +36,8 @@ Bir görev tamamlanmadan sonraki göreve geçilmemelidir. Görevlerdeki kodlar d
 - [07 — Testler ve kalite kapıları](tasks/07-testing.md)
 - [08 — MVP sonrası profesyonelleştirme](tasks/08-post-mvp.md)
 - [09 — SuperAdmin ve rol yönetimi](tasks/09-super-admin-role-management.md)
+- [10 — MVP güvenlik ve tutarlılık](tasks/10-mvp-hardening.md)
+- [11 — MVP sonrası ürün evrimi](tasks/11-product-evolution.md)
 
 ## Definition of Done
 

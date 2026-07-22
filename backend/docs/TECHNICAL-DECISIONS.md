@@ -174,6 +174,10 @@ Kaynak bazlı yetkilendirme için ASP.NET Core authorization handler/policy yeri
 
 Servis üç seviye sunar:
 
+> Bu bölüm mevcut implementasyonu açıklar. Görev silmeye özel `ProjectManager`
+> istisnası ürün hedefi değildir; [Görev 10 / B10-02](tasks/10-mvp-hardening.md)
+> kapsamında proje sahibi/Admin/atanmış üye matrisiyle değiştirilecektir.
+
 - `EnsureMemberAsync(projectId)`: Aktif kullanıcı projenin üyesi olmalıdır (okuma, görev oluşturma/güncelleme).
 - `EnsureCanManageAsync(projectId)`: Proje sahibi veya `Admin` rolü gerekir (proje güncelleme/silme, üye ekleme/çıkarma).
 - `EnsureCanDeleteTasksAsync(projectId)`: Görev silme ek olarak rol kapısından geçer: `Admin` **veya** `ProjectManager` rolüne sahip proje sahibi. `Member` rolündeki bir kullanıcı, projenin sahibi olsa bile görev silemez; proje yönetim hakları (üye ekleme, proje güncelleme) sahiplik üzerinden devam eder.

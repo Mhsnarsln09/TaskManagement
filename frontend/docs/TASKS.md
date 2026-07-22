@@ -1,5 +1,9 @@
 # Frontend Görevleri
 
+> Bu dosyadaki işaretler ilk uygulama kapsamının kodlandığını gösterir; yayın olgunluğu
+> anlamına gelmez. Güncel yayın engelleri [10 — MVP sertleştirme](tasks/10-mvp-hardening.md),
+> yeni ürün özellikleri [11 — Ürün evrimi](tasks/11-product-evolution.md) dosyasındadır.
+
 ## 00 - Tasarım
 
 - [x] Claude Design prompt'unu kullanarak tüm MVP ekranlarını üret
@@ -76,3 +80,8 @@
 - [x] SuperAdmin olmayan kullanıcılardan navigasyonu ve route'u koru
 - [x] SuperAdmin yönetim ekranının mobil görünümünü ve dar tablo davranışını uygula
 - [x] Rolü değişen hedef kullanıcının geçersiz oturum davranışını test et (401 → tekil refresh → başarısızsa oturum-süresi-doldu yönlendirmesi; client.test.ts)
+
+## Devam eden işler
+
+- [ ] [10 — MVP sertleştirme ve sözleşme düzeltmeleri](tasks/10-mvp-hardening.md)
+- [ ] [11 — MVP sonrası ürün evrimi](tasks/11-product-evolution.md)

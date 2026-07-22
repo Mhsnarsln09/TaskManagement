@@ -24,6 +24,9 @@ Rol, proje üyeliği ve kaynak sahipliğine bağlı kuralları merkezi ve test e
 
 ## Test senaryoları
 
+> Aşağıdaki silme senaryoları ilk implementasyonun kaydıdır. Hedef MVP yetki matrisi
+> [Görev 10 / B10-02](10-mvp-hardening.md) ile değiştirilmiştir.
+
 - Üye olmayan kullanıcı proje listesinden projeyi göremez.
 - Üye olmayan kullanıcı doğrudan ID ile görevi okuyamaz.
 - Member görev silemez.
@@ -43,4 +46,3 @@ Rol, proje üyeliği ve kaynak sahipliğine bağlı kuralları merkezi ve test e
 ```text
 feat(application): enforce project authorization and task rules
 ```
-

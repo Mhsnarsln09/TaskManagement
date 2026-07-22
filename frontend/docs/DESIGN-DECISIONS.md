@@ -87,6 +87,10 @@ deseninin başlıksız fallback'i).
 
 ## 7. Yetki matrisi (UI görünürlüğü)
 
+> Bu tablo mevcut implementasyonun görünürlük kurallarını kaydeder. Hedef MVP matrisi
+> [Frontend Görev 10 / F10-03](tasks/10-mvp-hardening.md) kapsamında backend B10-02
+> ile birlikte değiştirilecektir.
+
 Backend kuralları (`ProjectAuthorizationService`, `TaskService`):
 
 | Eylem | Kural |
