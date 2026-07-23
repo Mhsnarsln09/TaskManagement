@@ -20,7 +20,7 @@ public sealed class DueDateReminderService(
         {
             string idempotencyKey = $"due:{candidate.TaskItemId}:{candidate.DueDate:yyyy-MM-dd}";
             bool created = await notificationService.DueReminderAsync(
-                candidate.TaskItemId, candidate.AssigneeUserId, candidate.Title, candidate.DueDate, cancellationToken);
+                candidate.ProjectId, candidate.TaskItemId, candidate.AssigneeUserId, candidate.Title, candidate.DueDate, cancellationToken);
 
             if (!created) continue;
 

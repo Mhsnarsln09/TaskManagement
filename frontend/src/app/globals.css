@@ -56,6 +56,17 @@
 }
 
 :root {
+  /* F10-07: Google Fonts (next/font/google) build sırasında ağdan indirilirdi;
+     ağsız build'i garantilemek için repoda font binary'si taşımadan güvenli sistem
+     font yığınına geçildi. Türkçe (latin-ext) glifler sistem fontlarında mevcuttur. */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-geist-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+
   /* Tasarım tokenları (DESIGN-DECISIONS.md §13): nötr slate, vurgu teal-700,
      kart yarıçapı 8px, kontroller ~6px. */
   --background: oklch(1 0 0);

@@ -220,7 +220,12 @@ async function defaultHandler(route: Route, url: URL, key: string, path: string)
   if (path.endsWith("/attachments")) return json(route, []);
 
   // --- Bildirimler ---
+  // Sayfadan bağımsız okunmamış sayısı (B10-07); genel /notifications/ catch'inden ÖNCE.
+  if (key === "GET /api/notifications/unread-count") {
+    return json(route, { unreadCount: NOTIFICATIONS.filter((item) => !item.isRead).length });
+  }
   if (key === "GET /api/notifications") return json(route, paged(NOTIFICATIONS, 1, 20, 2));
+  // Tekil okundu (PUT .../{id}/read) ve toplu okundu (PUT .../read-all): 204.
   if (path.startsWith("/api/notifications/")) return noContent(route);
 
   // --- Yönetim ---

@@ -52,6 +52,7 @@
     <Compile Include="Persistence/ApplicationDbContext.cs" />
     <Compile Include="Persistence/ApplicationDbContextFactory.cs" />
     <Compile Include="Persistence/AuditLog.cs" />
+    <Compile Include="Persistence/RowVersion.cs" />
     <Compile Include="Persistence/Configurations/ApplicationUserConfiguration.cs" />
     <Compile Include="Persistence/Configurations/AttachmentConfiguration.cs" />
     <Compile Include="Persistence/Configurations/AuditLogConfiguration.cs" />
@@ -71,6 +72,8 @@
     <Compile Include="Persistence/Migrations/20260720104648_AddPostMvpFeatures.cs" />
     <Compile Include="Persistence/Migrations/20260720122158_AddSuperAdminRoleManagement.Designer.cs" />
     <Compile Include="Persistence/Migrations/20260720122158_AddSuperAdminRoleManagement.cs" />
+    <Compile Include="Persistence/Migrations/20260722121417_AddNotificationProjectId.Designer.cs" />
+    <Compile Include="Persistence/Migrations/20260722121417_AddNotificationProjectId.cs" />
     <Compile Include="Persistence/Migrations/ApplicationDbContextModelSnapshot.cs" />
     <Compile Include="Repositories/AttachmentRepository.cs" />
     <Compile Include="Repositories/CommentRepository.cs" />

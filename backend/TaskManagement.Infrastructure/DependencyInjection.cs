@@ -44,6 +44,11 @@ public static class DependencyInjection
                 options.Password.RequireLowercase = true;
                 options.Password.RequireDigit = true;
                 options.Password.RequireNonAlphanumeric = false;
+                // Account lockout after repeated failed logins (B10-09). Enabled for new
+                // users so every account is protected; IdentityService counts failures.
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -90,6 +95,33 @@ public static class DependencyInjection
         services.AddSingleton<IFileScanner, BasicFileScanner>();
 
         return services;
+    }
+
+    // Fails fast when the API would start in Production still wired to the development
+    // stub adapters (B10-09). The stubs only log e-mail and wave every upload through,
+    // so shipping them silently would be a security and correctness hole.
+    public static void ValidateProductionReadiness(this IServiceProvider services, bool isProduction)
+    {
+        if (!isProduction)
+        {
+            return;
+        }
+
+        using IServiceScope scope = services.CreateScope();
+
+        if (scope.ServiceProvider.GetRequiredService<IEmailSender>() is LoggingEmailSender)
+        {
+            throw new InvalidOperationException(
+                "LoggingEmailSender is a development stub and must not run in Production. "
+                + "Register a real IEmailSender before deploying.");
+        }
+
+        if (scope.ServiceProvider.GetRequiredService<IFileScanner>() is BasicFileScanner)
+        {
+            throw new InvalidOperationException(
+                "BasicFileScanner is a development stub and must not run in Production. "
+                + "Register a real malware-scanning IFileScanner before deploying.");
+        }
     }
 
     public static Task SeedInfrastructureAsync(this IServiceProvider services)

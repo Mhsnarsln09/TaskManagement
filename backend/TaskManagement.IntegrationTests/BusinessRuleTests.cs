@@ -60,31 +60,34 @@ public sealed class BusinessRuleTests(TaskManagementApiFactory factory)
     }
 
     [Fact]
-    public async Task DeleteTask_AsProjectManagerOwningTheProject_Succeeds()
+    public async Task DeleteTask_AsOwnerWithoutProjectManagerRole_Succeeds()
     {
-        (HttpClient _, Guid managerId, string managerUserName) = await RegisterUserAsync();
-        await AddToRoleAsync(managerId, ApplicationRoles.ProjectManager);
-        // The registration token predates the role; log in again so the token
-        // actually carries the ProjectManager role claim.
-        HttpClient manager = await LoginAsync(managerUserName);
-        Guid projectId = await CreateProjectAsync(manager);
-        Guid taskId = await CreateTaskAsync(manager, projectId);
-
-        HttpResponseMessage response = await manager.DeleteAsync($"/api/projects/{projectId}/tasks/{taskId}");
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task DeleteTask_AsOwnerWithoutProjectManagerRole_ReturnsForbidden()
-    {
-        // Registration only grants the Member role; owning the project is not
-        // enough to delete tasks.
+        // B10-02: task deletion is a full-management action for the project owner (or an
+        // Admin). The former "owner must also hold the ProjectManager role" gate was
+        // removed, so a plain Member-role owner can delete tasks in their own project.
         (HttpClient owner, _, _) = await RegisterUserAsync();
         Guid projectId = await CreateProjectAsync(owner);
         Guid taskId = await CreateTaskAsync(owner, projectId);
 
         HttpResponseMessage response = await owner.DeleteAsync($"/api/projects/{projectId}/tasks/{taskId}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteTask_AsProjectManagerNotOwningTheProject_ReturnsForbidden()
+    {
+        // The system ProjectManager role grants no project authority on its own (B10-02):
+        // a ProjectManager who is only a member (not owner, not Admin) cannot delete.
+        (HttpClient owner, _, _) = await RegisterUserAsync();
+        (HttpClient _, Guid managerId, string managerUserName) = await RegisterUserAsync();
+        await AddToRoleAsync(managerId, ApplicationRoles.ProjectManager);
+        HttpClient manager = await LoginAsync(managerUserName);
+        Guid projectId = await CreateProjectAsync(owner);
+        Guid taskId = await CreateTaskAsync(owner, projectId);
+        await AddMemberAsync(owner, projectId, managerId);
+
+        HttpResponseMessage response = await manager.DeleteAsync($"/api/projects/{projectId}/tasks/{taskId}");
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }

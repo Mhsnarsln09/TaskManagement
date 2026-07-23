@@ -4,6 +4,63 @@
  */
 
 export interface paths {
+    "/api/admin/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all active projects (admin) */
+        get: {
+            parameters: {
+                query?: {
+                    Page?: number;
+                    PageSize?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PagedResponseOfProjectResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/users": {
         parameters: {
             query?: never;
@@ -220,6 +277,15 @@ export interface paths {
                         "application/json": components["schemas"]["ProblemDetails"];
                     };
                 };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -272,6 +338,15 @@ export interface paths {
                 };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -346,6 +421,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RefreshTokenRequest"];
+                    "text/json": components["schemas"]["RefreshTokenRequest"];
+                    "application/*+json": components["schemas"]["RefreshTokenRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notifications": {
         parameters: {
             query?: never;
@@ -374,6 +499,43 @@ export interface paths {
                         "text/plain": components["schemas"]["PagedResponseOfNotificationResponse"];
                         "application/json": components["schemas"]["PagedResponseOfNotificationResponse"];
                         "text/json": components["schemas"]["PagedResponseOfNotificationResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UnreadCountResponse"];
+                        "application/json": components["schemas"]["UnreadCountResponse"];
+                        "text/json": components["schemas"]["UnreadCountResponse"];
                     };
                 };
             };
@@ -422,6 +584,39 @@ export interface paths {
                         "application/json": components["schemas"]["ProblemDetails"];
                         "text/json": components["schemas"]["ProblemDetails"];
                     };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
             };
         };
@@ -1017,6 +1212,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * List task comments, newest first
+         * @description Returns comments ordered newest first (descending CreatedAtUtc, then Id). Page 1 carries the most recent comments; higher pages return progressively older comments. The ordering is stable across pages even for comments sharing a timestamp.
+         */
         get: {
             parameters: {
                 query?: {
@@ -1525,6 +1724,8 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
+            projectId: string;
+            /** Format: uuid */
             taskItemId: string;
             type: components["schemas"]["NotificationType"];
             message: string;
@@ -1560,6 +1761,17 @@ export interface components {
         };
         PagedResponseOfNotificationResponse: {
             items: components["schemas"]["NotificationResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            pageSize: number;
+            /** Format: int32 */
+            totalCount: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        PagedResponseOfProjectResponse: {
+            items: components["schemas"]["ProjectResponse"][];
             /** Format: int32 */
             page: number;
             /** Format: int32 */
@@ -1657,6 +1869,11 @@ export interface components {
             createdAtUtc: string;
             /** Format: date-time */
             updatedAtUtc: null | string;
+            version: string;
+        };
+        UnreadCountResponse: {
+            /** Format: int32 */
+            unreadCount: number;
         };
         UpdateProjectRequest: {
             name: string;
@@ -1671,6 +1888,7 @@ export interface components {
             dueDate: null | string;
             /** Format: uuid */
             assigneeUserId: null | string;
+            version?: null | string;
         };
         UserResponse: {
             /** Format: uuid */

@@ -88,52 +88,31 @@ public sealed class ProjectAuthorizationServiceTests
     }
 
     [Fact]
-    public async Task EnsureCanDeleteTasks_OwnerWithProjectManagerRole_Passes()
+    public async Task CanManage_Owner_ReturnsTrue()
     {
-        GrantMembership(_userId);
-        SetOwner(_userId);
-        GrantRole(ApplicationRoles.ProjectManager);
-
-        await _service.EnsureCanDeleteTasksAsync(_projectId, CancellationToken.None);
-    }
-
-    [Fact]
-    public async Task EnsureCanDeleteTasks_OwnerWithoutProjectManagerRole_ThrowsForbidden()
-    {
-        GrantMembership(_userId);
         SetOwner(_userId);
 
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => _service.EnsureCanDeleteTasksAsync(_projectId, CancellationToken.None));
+        Assert.True(await _service.CanManageAsync(_projectId, CancellationToken.None));
     }
 
     [Fact]
-    public async Task EnsureCanDeleteTasks_MemberWithProjectManagerRoleButNotOwner_ThrowsForbidden()
-    {
-        GrantMembership(_userId);
-        SetOwner(Guid.NewGuid());
-        GrantRole(ApplicationRoles.ProjectManager);
-
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => _service.EnsureCanDeleteTasksAsync(_projectId, CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task EnsureCanDeleteTasks_NonMember_ThrowsNotFound()
-    {
-        GrantRole(ApplicationRoles.ProjectManager);
-
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => _service.EnsureCanDeleteTasksAsync(_projectId, CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task EnsureCanDeleteTasks_AdminForExistingProject_Passes()
+    public async Task CanManage_Admin_ReturnsTrueWithoutOwnerLookup()
     {
         GrantRole(ApplicationRoles.Admin);
-        _projectRepository.ExistsAsync(_projectId, Arg.Any<CancellationToken>()).Returns(true);
 
-        await _service.EnsureCanDeleteTasksAsync(_projectId, CancellationToken.None);
+        Assert.True(await _service.CanManageAsync(_projectId, CancellationToken.None));
+        await _projectRepository.DidNotReceive()
+            .GetOwnerIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CanManage_MemberButNotOwner_ReturnsFalse()
+    {
+        // A system ProjectManager role alone must not grant project authority (B10-02).
+        GrantRole(ApplicationRoles.ProjectManager);
+        SetOwner(Guid.NewGuid());
+
+        Assert.False(await _service.CanManageAsync(_projectId, CancellationToken.None));
     }
 
     private void GrantMembership(Guid userId)

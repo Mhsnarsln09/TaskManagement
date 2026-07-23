@@ -27,7 +27,7 @@ interface AuthContextValue {
   hasRole: (role: ApplicationRole) => boolean;
   login: (request: LoginRequest) => Promise<void>;
   register: (request: RegisterRequest) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -80,8 +80,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     tokenStore.setFromAuthResponse(response);
   }, []);
 
-  const logout = useCallback(() => {
-    // Çıkış endpoint'i yok; istemci tokenları temizler (DESIGN-DECISIONS.md §9).
+  const logout = useCallback(async () => {
+    // Sunucu taraflı çıkış: refresh token ailesini iptal et (B10-03). Sonuçtan
+    // bağımsız olarak yerel oturumu temizle — ağ hatası çıkışı engellememeli.
+    const refreshToken = tokenStore.get()?.refreshToken;
+    if (refreshToken) {
+      try {
+        await authApi.logout({ refreshToken });
+      } catch {
+        // İdempotent uç; başarısızlıkta bile yerel temizlik yapılır.
+      }
+    }
+    // localStorage.removeItem diğer sekmelerde storage event'i tetikler; onlar da
+    // oturumu boş görüp girişe yönlenir (çıkışın sekmeler arası yayılması).
     tokenStore.clear();
     userDirectory.clear();
     router.replace("/login");

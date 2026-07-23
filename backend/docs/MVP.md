@@ -6,7 +6,13 @@ Tek bir ekip akışını uçtan uca güvenli biçimde çalıştırmak: kullanıc
 
 ## Durum notu — 22 Temmuz 2026
 
-Temel akışlar uygulanmıştır; ancak mevcut sürüm yayınlanabilir MVP olarak tamamlanmış kabul edilmez. Silinmiş proje alt kaynaklarına erişim, yorum sayfalama sözleşmesi, görev yetkilerinin kapsamı ve refresh token iptali [Görev 10 — MVP güvenlik ve tutarlılık](tasks/10-mvp-hardening.md) tamamlanana kadar çıkış engelidir.
+Temel akışlar uygulanmıştır. [Görev 10 — MVP güvenlik ve tutarlılık](tasks/10-mvp-hardening.md)
+yayın engellerinin (B10-01…B10-09) kodu, unit testleri ve integration testleri yazıldı;
+`dotnet build` ve unit test suite (76 test) geçiyor. Integration testleri (Testcontainers /
+`postgres:18`) ve OpenAPI istemci üretimi Docker gerektirir; bunlar CI'da / Docker'lı bir
+ortamda çalıştırılmalıdır. Silinmiş proje izolasyonu, görev yetki matrisi, sunucu-taraflı
+logout, en-yeni-önce yorum sayfalaması, optimistic concurrency ve bildirim sözleşmesi
+merkezî olarak uygulanmıştır.
 
 ## MVP kapsamı
 

@@ -31,13 +31,37 @@ function retryAfterSeconds(response: Response): number | null {
   return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
 }
 
+/**
+ * Sekmeler arası refresh kilidi: aynı token ailesini iki sekmenin eşzamanlı
+ * yenilemesi reuse-detection'ı tetikleyip oturumu bozar (B10-03). Web Locks API
+ * varsa tek seferde tek sekme yeniler; yoksa (jsdom/eski tarayıcı) sekme-içi
+ * `refreshPromise` tekilliğine düşülür. Kilidi alan sekme, beklerken başka bir
+ * sekmenin zaten yenilediğini görürse yeni token'ı kullanır, ikinci kez yenilemez.
+ */
+function withRefreshLock<T>(fn: () => Promise<T>): Promise<T> {
+  const locks = typeof navigator !== "undefined" ? navigator.locks : undefined;
+  if (locks?.request) {
+    return locks.request("taskmanagement.auth-refresh", () => fn()) as Promise<T>;
+  }
+  return fn();
+}
+
 /** Tekil refresh kuyruğu: eşzamanlı çağrılar aynı promise'i bekler. */
-async function refreshSession(): Promise<boolean> {
+async function refreshSession(staleAccessToken: string | null): Promise<boolean> {
   if (refreshPromise) return refreshPromise;
 
-  refreshPromise = (async () => {
+  refreshPromise = withRefreshLock(async () => {
+    // Kilit beklenirken başka sekme yenilemiş olabilir: en güncel token'ı oku.
+    tokenStore.invalidateCache();
     const session = tokenStore.get();
     if (!session) return false;
+
+    // Access token değiştiyse başka bir sekme zaten yeniledi; tekrar yenileme,
+    // yeni token ile isteği yinelemek yeterli.
+    if (staleAccessToken && session.accessToken !== staleAccessToken) {
+      return true;
+    }
+
     try {
       const response = await fetch(`${apiBaseUrl}/api/auth/refresh`, {
         method: "POST",
@@ -46,17 +70,17 @@ async function refreshSession(): Promise<boolean> {
       });
       if (!response.ok) return false;
       const auth = (await response.json()) as AuthResponse;
-      // Yeni access+refresh token atomik olarak eskilerinin yerini alır.
+      // Yeni access+refresh token atomik olarak eskilerinin yerini alır; storage
+      // event'i diğer sekmeleri de bu token ailesine senkronlar.
       tokenStore.setFromAuthResponse(auth);
       return true;
     } catch {
       return false;
-    } finally {
-      // Promise çözülmeden null'lamak yeni kuyruk açılmasına izin verirdi;
-      // burada sıralama garanti: önce sonuç, sonra sıfırlama.
-      refreshPromise = null;
     }
-  })();
+  }).finally(() => {
+    // Promise çözüldükten sonra sıfırla ki bir sonraki 401 yeni kuyruk açabilsin.
+    refreshPromise = null;
+  });
 
   return refreshPromise;
 }
@@ -141,10 +165,12 @@ async function fetchWithAuthRetry(
   path: string,
   options: ApiFetchOptions,
 ): Promise<Response> {
+  // İstekte kullanılan access token; refresh koordinasyonunda "eskimiş mi" kararı için.
+  const usedAccessToken = options.anonymous ? null : tokenStore.get()?.accessToken ?? null;
   let response = await doFetch(path, options);
 
   if (response.status === 401 && !options.anonymous && tokenStore.get()) {
-    const refreshed = await refreshSession();
+    const refreshed = await refreshSession(usedAccessToken);
     if (refreshed) {
       response = await doFetch(path, options);
     } else {

@@ -8,7 +8,7 @@ public sealed class NotificationTests
     public void MarkAsRead_IsIdempotent()
     {
         var notification = new Notification(
-            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), NotificationType.TaskAssigned, "Assigned", "key");
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), NotificationType.TaskAssigned, "Assigned", "key");
         var firstRead = new DateTimeOffset(2026, 7, 20, 10, 0, 0, TimeSpan.Zero);
 
         notification.MarkAsRead(firstRead);

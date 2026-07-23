@@ -40,6 +40,8 @@ import {
 } from "@/components/shared/badges";
 import { UserDisplay } from "@/components/shared/user-display";
 import { projectsApi, tasksApi } from "@/lib/api/endpoints";
+import { useAuth } from "@/lib/auth/auth-context";
+import { canManageTasks } from "@/lib/permissions";
 import {
   TASK_PRIORITIES,
   TASK_SORT_FIELDS,
@@ -106,6 +108,7 @@ export function TasksView({ projectId }: { projectId: string }) {
   const searchParams = useSearchParams();
   const filters = parseFilters(searchParams);
   const [createOpen, setCreateOpen] = useState(false);
+  const { user } = useAuth();
 
   const setFilters = useCallback(
     (next: Partial<Filters>) => {
@@ -159,6 +162,10 @@ export function TasksView({ projectId }: { projectId: string }) {
 
   const hasFilters = filters.status !== undefined || filters.priority !== undefined;
   const data = tasksQuery.data;
+  // Görev oluşturma yalnız sahip/Admin'e görünür (B10-02 / F10-03).
+  const canCreate = projectQuery.data
+    ? canManageTasks(user, projectQuery.data)
+    : false;
 
   function toggleSort(field: TaskSortField) {
     if (filters.sortBy === field) {
@@ -177,10 +184,12 @@ export function TasksView({ projectId }: { projectId: string }) {
         title="Görevler"
         description={projectQuery.data?.name}
         actions={
-          <Button type="button" onClick={() => setCreateOpen(true)}>
-            <Plus aria-hidden className="size-4" />
-            Yeni görev
-          </Button>
+          canCreate ? (
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <Plus aria-hidden className="size-4" />
+              Yeni görev
+            </Button>
+          ) : null
         }
       />
 
@@ -294,12 +303,18 @@ export function TasksView({ projectId }: { projectId: string }) {
             <EmptyState
               icon={ClipboardList}
               title="Bu projede henüz görev yok"
-              description="İlk görevi oluşturun."
+              description={
+                canCreate
+                  ? "İlk görevi oluşturun."
+                  : "Görev oluşturma yetkisi proje sahibinde veya Admin'dedir."
+              }
               action={
-                <Button type="button" onClick={() => setCreateOpen(true)}>
-                  <Plus aria-hidden className="size-4" />
-                  Yeni görev
-                </Button>
+                canCreate ? (
+                  <Button type="button" onClick={() => setCreateOpen(true)}>
+                    <Plus aria-hidden className="size-4" />
+                    Yeni görev
+                  </Button>
+                ) : undefined
               }
             />
           )

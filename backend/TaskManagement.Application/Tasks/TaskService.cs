@@ -13,14 +13,16 @@ public sealed class TaskService(
     ProjectAuthorizationService projectAuthorization,
     TimeProvider timeProvider,
     INotificationService notificationService,
-    IApplicationCache cache)
+    IApplicationCache cache,
+    ICurrentUser currentUser)
 {
     public async Task<TaskResponse> CreateAsync(
         Guid projectId,
         CreateTaskRequest request,
         CancellationToken cancellationToken)
     {
-        await projectAuthorization.EnsureMemberAsync(projectId, cancellationToken);
+        // Task creation is a full-management action: project owner or Admin only (B10-02).
+        await projectAuthorization.EnsureCanManageAsync(projectId, cancellationToken);
         await EnsureAssigneeIsMemberAsync(projectId, request.AssigneeUserId, cancellationToken);
 
         var task = new TaskItem(
@@ -39,10 +41,11 @@ public sealed class TaskService(
         if (task.AssigneeUserId is Guid assigneeUserId)
         {
             await notificationService.TaskAssignedAsync(
-                task.Id, assigneeUserId, task.Title, cancellationToken);
+                projectId, task.Id, assigneeUserId, task.Title, cancellationToken);
         }
 
-        return Map(task);
+        // The provider read back the row version on save, so it is now on the entity (B10-06).
+        return Map(task, taskRepository.GetVersion(task));
     }
 
     public async Task<PagedResponse<TaskResponse>> ListAsync(
@@ -68,10 +71,41 @@ public sealed class TaskService(
         UpdateTaskRequest request,
         CancellationToken cancellationToken)
     {
+        // Membership is the 404 gate; the permission tier is decided below (B10-02).
         await projectAuthorization.EnsureMemberAsync(projectId, cancellationToken);
-        await EnsureAssigneeIsMemberAsync(projectId, request.AssigneeUserId, cancellationToken);
 
         TaskItem task = await GetTaskEntityAsync(projectId, taskId, cancellationToken);
+
+        // Owner/Admin may edit every field and reassign. An ordinary member may only
+        // change the status of a task assigned to them; any other field change (or a
+        // task that is not theirs) is forbidden.
+        bool canManage = await projectAuthorization.CanManageAsync(projectId, cancellationToken);
+        if (!canManage)
+        {
+            if (task.AssigneeUserId != currentUser.UserId)
+            {
+                throw new ForbiddenException(
+                    "Only the project owner, an admin, or the task's assignee can update this task.");
+            }
+
+            EnsureOnlyStatusChanged(task, request);
+        }
+
+        await EnsureAssigneeIsMemberAsync(projectId, request.AssigneeUserId, cancellationToken);
+
+        // A past due date is rejected only when it is actually being changed (B10-05).
+        // An overdue task keeps its stale date, so editing any other field must not be
+        // blocked just because the existing due date is already in the past.
+        if (request.DueDate is DateOnly newDueDate
+            && newDueDate != task.DueDate
+            && newDueDate < Today())
+        {
+            throw new ValidationProblemException(new Dictionary<string, string[]>
+            {
+                ["dueDate"] = ["Due date cannot be in the past."]
+            });
+        }
+
         Guid? previousAssignee = task.AssigneeUserId;
         WorkItemStatus previousStatus = task.Status;
 
@@ -90,32 +124,64 @@ public sealed class TaskService(
         task.AssignTo(request.AssigneeUserId);
         ApplyStatus(task, request.Status);
 
+        // Optimistic concurrency (B10-06): when the client sent the version it was
+        // editing, pin it so a row changed by someone else fails with 409 instead of
+        // overwriting the newer data.
+        if (!string.IsNullOrWhiteSpace(request.Version))
+        {
+            taskRepository.SetExpectedVersion(task, request.Version);
+        }
+
         await taskRepository.SaveChangesAsync(cancellationToken);
         await cache.RemoveAsync(StatisticsCacheKey(projectId), cancellationToken);
 
         if (task.AssigneeUserId is Guid assigneeUserId && assigneeUserId != previousAssignee)
         {
-            await notificationService.TaskAssignedAsync(task.Id, assigneeUserId, task.Title, cancellationToken);
+            await notificationService.TaskAssignedAsync(projectId, task.Id, assigneeUserId, task.Title, cancellationToken);
         }
 
         if (task.AssigneeUserId is Guid statusRecipient && task.Status != previousStatus)
         {
             await notificationService.TaskStatusChangedAsync(
-                task.Id, statusRecipient, task.Title, task.Status.ToString(), cancellationToken);
+                projectId, task.Id, statusRecipient, task.Title, task.Status.ToString(), cancellationToken);
         }
 
-        return Map(task);
+        // The provider read back the row version on save, so it is now on the entity (B10-06).
+        return Map(task, taskRepository.GetVersion(task));
     }
 
     public async Task DeleteAsync(Guid projectId, Guid taskId, CancellationToken cancellationToken)
     {
-        // Only a ProjectManager owning the project or an Admin may delete tasks.
-        await projectAuthorization.EnsureCanDeleteTasksAsync(projectId, cancellationToken);
+        // Task deletion is a full-management action: project owner or Admin only (B10-02).
+        await projectAuthorization.EnsureCanManageAsync(projectId, cancellationToken);
 
         TaskItem task = await GetTaskEntityAsync(projectId, taskId, cancellationToken);
         task.SoftDelete();
         await taskRepository.SaveChangesAsync(cancellationToken);
         await cache.RemoveAsync(StatisticsCacheKey(projectId), cancellationToken);
+    }
+
+    // For the assignee status-only path: rejects any change to a non-status field so an
+    // ordinary member cannot rename, reprioritise, reschedule or reassign a task. String
+    // and description values are normalised the same way the domain setters would, so an
+    // unchanged field never reads as a change because of whitespace.
+    private static void EnsureOnlyStatusChanged(TaskItem task, UpdateTaskRequest request)
+    {
+        static string? Normalize(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+        bool onlyStatus =
+            Normalize(request.Title) == task.Title
+            && Normalize(request.Description) == task.Description
+            && request.Priority == task.Priority
+            && request.DueDate == task.DueDate
+            && request.AssigneeUserId == task.AssigneeUserId;
+
+        if (!onlyStatus)
+        {
+            throw new ForbiddenException(
+                "The task's assignee may only change its status; other fields are managed by the project owner or an admin.");
+        }
     }
 
     private async Task EnsureAssigneeIsMemberAsync(
@@ -187,7 +253,7 @@ public sealed class TaskService(
 
     private static string StatisticsCacheKey(Guid projectId) => $"project-statistics:{projectId}";
 
-    private TaskResponse Map(TaskItem task)
+    private TaskResponse Map(TaskItem task, string version)
     {
         return new TaskResponse(
             task.Id,
@@ -200,6 +266,7 @@ public sealed class TaskService(
             task.AssigneeUserId,
             task.IsOverdue(Today()),
             task.CreatedAtUtc,
-            task.UpdatedAtUtc);
+            task.UpdatedAtUtc,
+            version);
     }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { BellOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,7 +21,7 @@ import { NotificationItem } from "./notification-item";
 const PAGE_SIZE = 20;
 
 export function NotificationsPage() {
-  const { markRead, markManyRead } = useNotifications();
+  const { markRead, markAllRead } = useNotifications();
   const [markingAll, setMarkingAll] = useState(false);
 
   const query = useInfiniteQuery({
@@ -33,14 +33,21 @@ export function NotificationsPage() {
       lastPage.page < totalPagesOf(lastPage) ? lastPage.page + 1 : undefined,
   });
 
+  // Okunmamış toplamı sunucudan; yüklenmiş sayfalara bağlı değil (B10-07).
+  const unreadCountQuery = useQuery({
+    queryKey: [...NOTIFICATIONS_QUERY_KEY, "unread-count"],
+    queryFn: ({ signal }) => notificationsApi.unreadCount(signal),
+  });
+  const unreadCount = unreadCountQuery.data?.unreadCount ?? 0;
+
   const items = query.data?.pages.flatMap((page) => page.items) ?? [];
-  const unread = items.filter((item) => !item.isRead);
 
   async function onMarkAll() {
     setMarkingAll(true);
     try {
-      const { failed } = await markManyRead(unread.map((item) => item.id));
-      if (failed > 0) toast.error(`${failed} bildirim okundu işaretlenemedi.`);
+      await markAllRead();
+    } catch {
+      toast.error("Bildirimler okundu işaretlenemedi.");
     } finally {
       setMarkingAll(false);
     }
@@ -51,10 +58,10 @@ export function NotificationsPage() {
       <PageHeader
         title="Bildirimler"
         description={
-          unread.length > 0 ? `${unread.length} okunmamış bildirim` : undefined
+          unreadCount > 0 ? `${unreadCount} okunmamış bildirim` : undefined
         }
         actions={
-          unread.length > 0 ? (
+          unreadCount > 0 ? (
             <Button
               type="button"
               variant="outline"
@@ -87,7 +94,7 @@ export function NotificationsPage() {
         <EmptyState
           icon={BellOff}
           title="Bildiriminiz yok"
-          description="Görev atamaları ve yorumlar burada görünür."
+          description="Görev atamaları, durum değişiklikleri ve son tarih hatırlatmaları burada görünür."
         />
       ) : (
         <>

@@ -75,8 +75,11 @@ export function CommentsSection({
   const data = firstPage.data;
   const totalCount = data?.totalCount ?? 0;
   const olderComments = olderPages.data ?? [];
-  // API en yeniden eskiye sıralar; görünümde eski → yeni akış istenir (tasarım §06).
-  const visible = [...olderComments, ...(data?.items ?? [])].reverse();
+  // Backend "en yeni ilk sayfa" döndürür (B10-04): page 1 en yeni, sonraki sayfalar
+  // daha eski. Yüklenmiş sayfaları newest-first sırada birleştirip (page 1 önce, sonra
+  // daha eski sayfalar) tersine çeviririz; sonuç eski → yeni kronolojik akıştır ve
+  // sayfa sınırlarında ne tekrar ne boşluk oluşur (tasarım §06, F10-01).
+  const visible = [...(data?.items ?? []), ...olderComments].reverse();
   const remaining = totalCount - visible.length;
 
   return (

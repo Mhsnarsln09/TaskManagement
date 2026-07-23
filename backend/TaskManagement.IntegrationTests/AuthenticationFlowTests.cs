@@ -2,6 +2,9 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 
 namespace TaskManagement.IntegrationTests;
 
@@ -88,6 +91,101 @@ public sealed class AuthenticationFlowTests(TaskManagementApiFactory factory)
         HttpResponseMessage response = await client.GetAsync("/api/projects");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_RevokesRefreshTokenFamily_SoItCannotBeReused()
+    {
+        HttpClient client = factory.CreateClient();
+        JsonElement session = await RegisterSessionAsync(client);
+        string refreshToken = session.GetProperty("refreshToken").GetString()!;
+
+        HttpResponseMessage logout = await client.PostAsJsonAsync("/api/auth/logout", new { refreshToken });
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+
+        // A stolen refresh token can no longer mint access tokens after logout.
+        HttpResponseMessage refresh = await client.PostAsJsonAsync("/api/auth/refresh", new { refreshToken });
+        Assert.Equal(HttpStatusCode.Unauthorized, refresh.StatusCode);
+
+        // Idempotent: logging out again with the same (now revoked) token still succeeds.
+        HttpResponseMessage again = await client.PostAsJsonAsync("/api/auth/logout", new { refreshToken });
+        Assert.Equal(HttpStatusCode.NoContent, again.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_WithUnknownToken_IsIdempotentNoContent()
+    {
+        HttpClient client = factory.CreateClient();
+
+        HttpResponseMessage logout = await client.PostAsJsonAsync(
+            "/api/auth/logout",
+            new { refreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N") });
+
+        Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_AfterTooManyFailedAttempts_LocksTheAccount()
+    {
+        HttpClient client = factory.CreateClient();
+        (string userName, string password) = await RegisterAsync(client);
+
+        // Five consecutive wrong passwords reach the lockout threshold (B10-09).
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            HttpResponseMessage failed = await client.PostAsJsonAsync("/api/auth/login", new
+            {
+                userNameOrEmail = userName,
+                password = "WrongPassword1"
+            });
+            Assert.Equal(HttpStatusCode.Unauthorized, failed.StatusCode);
+        }
+
+        // Even the correct password is now rejected while the account is locked out.
+        HttpResponseMessage locked = await client.PostAsJsonAsync("/api/auth/login", new
+        {
+            userNameOrEmail = userName,
+            password
+        });
+        Assert.Equal(HttpStatusCode.Unauthorized, locked.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_ExceedingAuthRateLimit_Returns429()
+    {
+        // A dedicated server instance with a tiny auth budget; the shared factory relaxes
+        // the limit so other suites are not throttled.
+        WebApplicationFactory<Program> limited = factory.WithWebHostBuilder(builder =>
+            builder.UseSetting("RateLimiting:Auth:PermitLimit", "3"));
+        HttpClient client = limited.CreateClient();
+
+        HttpStatusCode lastStatus = default;
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            HttpResponseMessage response = await client.PostAsJsonAsync("/api/auth/login", new
+            {
+                userNameOrEmail = "no-such-user",
+                password = "WhateverPassword1"
+            });
+            lastStatus = response.StatusCode;
+        }
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, lastStatus);
+    }
+
+    private static async Task<JsonElement> RegisterSessionAsync(HttpClient client)
+    {
+        string suffix = Guid.NewGuid().ToString("N")[..8];
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/auth/register", new
+        {
+            email = $"user{suffix}@test.local",
+            userName = $"user{suffix}",
+            password = "Password1",
+            displayName = "Test User"
+        });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        using JsonDocument payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return payload.RootElement.Clone();
     }
 
     private static async Task<(string UserName, string Password)> RegisterAsync(HttpClient client)

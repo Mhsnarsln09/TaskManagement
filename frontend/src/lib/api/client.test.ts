@@ -92,6 +92,37 @@ describe("apiFetch", () => {
     expect(tokenStore.get()?.refreshToken).toBe("refresh-renewed");
   });
 
+  it("başka sekme zaten yenilediyse ikinci kez refresh etmez", async () => {
+    // Sekmeler arası koordinasyon: bu sekme 401 alırken başka bir sekme token'ı
+    // yenilemiş olsun. Kilit alındıktan sonra access token değişmiş görülür ve
+    // /api/auth/refresh hiç çağrılmadan yeni token ile istek yinelenir.
+    let refreshCalls = 0;
+    let firstProtected = true;
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (url.endsWith("/api/auth/refresh")) {
+        refreshCalls += 1;
+        return jsonResponse(authResponse("renewed"));
+      }
+      const token = new Headers(init?.headers).get("Authorization");
+      if (token === "Bearer access-renewed") return jsonResponse({ ok: true });
+      if (firstProtected) {
+        firstProtected = false;
+        // Diğer sekmenin yenilemesini simüle et.
+        tokenStore.setFromAuthResponse(authResponse("renewed"));
+        return problemResponse(401);
+      }
+      return problemResponse(401);
+    });
+
+    const result = await apiFetch<{ ok: boolean }>("/api/projects");
+
+    expect(result.ok).toBe(true);
+    expect(refreshCalls).toBe(0);
+    expect(tokenStore.get()?.accessToken).toBe("access-renewed");
+  });
+
   it("refresh başarısızsa oturumu temizler ve expired handler'ı çağırır", async () => {
     const onExpired = vi.fn();
     setSessionExpiredHandler(onExpired);

@@ -32,8 +32,11 @@ public sealed class ProjectAuthorizationService(
         }
     }
 
-    // Managing a project (updating/deleting it, managing members) is restricted
-    // to the project owner or an Admin.
+    // Managing a project or its tasks in full (updating/deleting the project, managing
+    // members, creating/editing/reassigning/deleting tasks) is restricted to the
+    // project owner or an Admin. The PRD (docs/PRD.md §3-4) makes project ownership the
+    // source of resource authority; the system ProjectManager role grants nothing on
+    // its own (B10-02 removed the former ProjectManager+owner task-deletion exception).
     public async Task EnsureCanManageAsync(Guid projectId, CancellationToken cancellationToken)
     {
         if (currentUser.IsInRole(ApplicationRoles.Admin))
@@ -45,24 +48,19 @@ public sealed class ProjectAuthorizationService(
         await EnsureOwnerAsync(projectId, cancellationToken);
     }
 
-    // Task deletion is additionally role-gated (docs/tasks/05-business-rules.md):
-    // the PRD assigns it to the project's manager, so the owner must also hold the
-    // ProjectManager role. A Member-role owner keeps project management rights but
-    // cannot delete tasks.
-    public async Task EnsureCanDeleteTasksAsync(Guid projectId, CancellationToken cancellationToken)
+    // No-throw variant used by the task update matrix to distinguish a manager (owner
+    // or Admin, full edit) from an ordinary member (assignee status-only). The calling
+    // use-case has already established membership/existence, so this only decides the
+    // permission tier and never leaks project existence.
+    public async Task<bool> CanManageAsync(Guid projectId, CancellationToken cancellationToken)
     {
         if (currentUser.IsInRole(ApplicationRoles.Admin))
         {
-            await EnsureProjectExistsAsync(projectId, cancellationToken);
-            return;
+            return true;
         }
 
-        await EnsureOwnerAsync(projectId, cancellationToken);
-
-        if (!currentUser.IsInRole(ApplicationRoles.ProjectManager))
-        {
-            throw new ForbiddenException("Only a project manager who owns the project or an admin can delete tasks.");
-        }
+        Guid? ownerUserId = await projectRepository.GetOwnerIdAsync(projectId, cancellationToken);
+        return ownerUserId == currentUser.UserId;
     }
 
     private async Task EnsureOwnerAsync(Guid projectId, CancellationToken cancellationToken)

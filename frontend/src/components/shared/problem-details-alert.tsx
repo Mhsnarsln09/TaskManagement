@@ -20,6 +20,8 @@ interface ProblemDetailsAlertProps {
   error: unknown;
   /** Bağlama özgü başlık; verilmezse durumdan türetilir. */
   title?: string;
+  /** Bağlama özgü açıklama; verilmezse Problem Details detayından türetilir. */
+  description?: string;
   onRetry?: () => void;
   retryLabel?: string;
   className?: string;
@@ -51,6 +53,7 @@ function defaultTitle(error: unknown): string {
 export function ProblemDetailsAlert({
   error,
   title,
+  description: descriptionOverride,
   onRetry,
   retryLabel = "Tekrar dene",
   className,
@@ -91,7 +94,7 @@ export function ProblemDetailsAlert({
     ? countdown > 0
       ? `${countdown} sn sonra tekrar deneyebilirsiniz.`
       : "Şimdi tekrar deneyebilirsiniz."
-    : problemMessage(error);
+    : (descriptionOverride ?? problemMessage(error));
 
   return (
     <Alert

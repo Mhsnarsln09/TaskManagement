@@ -99,6 +99,22 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0,
                 AutoReplenishment = true
             }));
+
+    // Credential endpoints get a much tighter, IP-partitioned budget on top of the
+    // global limiter so password guessing is throttled before Identity lockout even
+    // engages (B10-09). Login is anonymous, so the partition key is the client IP. The
+    // limit is configurable so tests (which share one IP partition) can relax it.
+    int authPermitLimit = builder.Configuration.GetValue("RateLimiting:Auth:PermitLimit", 10);
+    options.AddPolicy("auth", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = authPermitLimit,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
 });
 builder.Services.AddApplication();
 JwtOptions jwtOptions = builder.Configuration
@@ -208,6 +224,9 @@ app.UseSerilogRequestLogging(options =>
     options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
 });
 app.UseExceptionHandler();
+
+// Refuse to start in Production while still wired to the development stub adapters (B10-09).
+app.Services.ValidateProductionReadiness(app.Environment.IsProduction());
 
 if (app.Configuration.GetValue("Database:MigrateOnStartup", false))
 {

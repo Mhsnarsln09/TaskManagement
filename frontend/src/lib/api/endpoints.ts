@@ -14,9 +14,11 @@ import type {
   PagedComments,
   PagedNotifications,
   PagedTasks,
+  UnreadCountResponse,
   ProjectMemberResponse,
   ProjectResponse,
   ProjectStatisticsResponse,
+  RefreshTokenRequest,
   RegisterRequest,
   ReplaceUserRolesRequest,
   SortDirection,
@@ -47,6 +49,14 @@ export const authApi = {
     }),
   login: (body: LoginRequest) =>
     apiFetch<AuthResponse>("/api/auth/login", {
+      method: "POST",
+      body,
+      anonymous: true,
+    }),
+  // Sunucu taraflı çıkış: refresh token ailesini iptal eder (B10-03). İdempotenttir;
+  // istemci sonuçtan bağımsız olarak yerel oturumu temizler.
+  logout: (body: RefreshTokenRequest) =>
+    apiFetch<void>("/api/auth/logout", {
       method: "POST",
       body,
       anonymous: true,
@@ -169,8 +179,14 @@ export const notificationsApi = {
       `/api/notifications${query({ page, pageSize })}`,
       { signal },
     ),
+  // Sayfadan bağımsız toplam okunmamış sayısı (B10-07).
+  unreadCount: (signal?: AbortSignal) =>
+    apiFetch<UnreadCountResponse>("/api/notifications/unread-count", { signal }),
   markRead: (id: string) =>
     apiFetch<void>(`/api/notifications/${id}/read`, { method: "PUT" }),
+  // Tek istekte tüm bildirimleri okundu yapar (B10-07); idempotent.
+  markAllRead: () =>
+    apiFetch<void>("/api/notifications/read-all", { method: "PUT" }),
 };
 
 export const adminApi = {

@@ -25,10 +25,12 @@ public sealed class CommentRepository(ApplicationDbContext dbContext) : IComment
         int totalCount = await comments.CountAsync(cancellationToken);
 
         List<CommentListItem> items = await comments
-            // Oldest first so a thread reads top to bottom; Id breaks ties between
-            // comments written in the same tick, keeping pagination stable.
-            .OrderBy(comment => comment.CreatedAtUtc)
-            .ThenBy(comment => comment.Id)
+            // Newest first (B10-04): the first page always carries the most recent
+            // comments so a busy thread shows current activity without paging to the
+            // end. Id breaks ties between comments written in the same tick — descending
+            // as well — so the ordering is total and pagination never skips or repeats.
+            .OrderByDescending(comment => comment.CreatedAtUtc)
+            .ThenByDescending(comment => comment.Id)
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
             .Select(comment => new CommentListItem(

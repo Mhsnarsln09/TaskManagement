@@ -100,6 +100,11 @@ export function TaskFormDialog({
   const queryClient = useQueryClient();
   const [error, setError] = useState<unknown>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  // Optimistic concurrency temeli (B10-06/F10-06): düzenlenen görevin versiyonu.
+  // 409'da yeni sürüme geçilirken form alanları KORUNUR, yalnız bu değer tazelenir.
+  const [version, setVersion] = useState<string | undefined>(task?.version);
+  // 409 sonrası çekilen güncel sunucu sürümü (karşılaştırma için gösterilir).
+  const [latestConflict, setLatestConflict] = useState<TaskResponse | null>(null);
 
   // Üye adları dizine yazılır; "Atanan" seçicisi GUID yerine ad gösterir.
   const membersQuery = useProjectMembers(projectId, open);
@@ -116,6 +121,16 @@ export function TaskFormDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, task?.id, task?.updatedAtUtc]);
 
+  // Görev/oturum değiştiğinde version ve çakışma durumunu render sırasında tazele
+  // (efekt içinde setState yerine React'in önerdiği "prop değişince state'i sıfırla").
+  const taskKey = open ? `${task?.id ?? ""}:${task?.updatedAtUtc ?? ""}` : "";
+  const [syncedTaskKey, setSyncedTaskKey] = useState(taskKey);
+  if (taskKey !== syncedTaskKey) {
+    setSyncedTaskKey(taskKey);
+    setVersion(task?.version);
+    setLatestConflict(null);
+  }
+
   const mutation = useMutation({
     mutationFn: (values: FormValues) => {
       const common = {
@@ -127,7 +142,11 @@ export function TaskFormDialog({
           values.assigneeUserId === UNASSIGNED ? null : values.assigneeUserId,
       };
       return isEdit
-        ? tasksApi.update(projectId, task.id, { ...common, status: values.status })
+        ? tasksApi.update(projectId, task.id, {
+            ...common,
+            status: values.status,
+            version,
+          })
         : tasksApi.create(projectId, common);
     },
     onSuccess: (saved) => {
@@ -204,19 +223,36 @@ export function TaskFormDialog({
                       ? "Bu görev siz düzenlerken başkası tarafından güncellendi."
                       : undefined
                   }
+                  description={
+                    is409 && latestConflict
+                      ? `Güncel sürümdeki başlık: “${latestConflict.title}” · durum: ${STATUS_LABELS[latestConflict.status]}. Değişiklikleriniz korundu; “Kaydet” ile güncel sürümün üzerine yazın.`
+                      : undefined
+                  }
                   onRetry={
-                    is409
-                      ? () => {
-                          // Son sürümü yükle: cache'i tazele, formu yeni değerlerle doldur.
-                          void queryClient
-                            .invalidateQueries({
-                              queryKey: ["project", projectId, "task", task?.id],
-                            })
-                            .then(() => setError(null));
+                    is409 && task
+                      ? async () => {
+                          // Girdiyi kaybetmeden güncel temele geç: en son sürümü çek,
+                          // yalnız version'ı tazele, form alanlarını KORU (F10-06).
+                          try {
+                            const latest = await tasksApi.get(projectId, task.id);
+                            setVersion(latest.version);
+                            setLatestConflict(latest);
+                            queryClient.setQueryData(
+                              ["project", projectId, "task", task.id],
+                              latest,
+                            );
+                            setError(null);
+                            toast.info("Güncel sürüme geçildi.", {
+                              description:
+                                "Değişiklikleriniz korundu; tekrar kaydedebilirsiniz.",
+                            });
+                          } catch (cause) {
+                            setError(cause);
+                          }
                         }
                       : undefined
                   }
-                  retryLabel="Son sürümü yükle"
+                  retryLabel="Güncel sürüme geç"
                 />
               ) : null}
 

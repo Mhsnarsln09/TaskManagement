@@ -172,17 +172,23 @@ Kaynak bazlı yetkilendirme için ASP.NET Core authorization handler/policy yeri
 - HTTP pipeline'a bağımlı olmadığı için controller'dan bağımsız unit/integration test edilebilir.
 - `[Authorize(Roles = "...")]` yalnızca kaba kapı olarak kalır; kritik kontrol hiçbir zaman UI veya attribute varsayımına bırakılmaz.
 
-Servis üç seviye sunar:
+Servis şu yetki kapılarını sunar (Görev 10 / B10-02 ile güncellendi):
 
-> Bu bölüm mevcut implementasyonu açıklar. Görev silmeye özel `ProjectManager`
-> istisnası ürün hedefi değildir; [Görev 10 / B10-02](tasks/10-mvp-hardening.md)
-> kapsamında proje sahibi/Admin/atanmış üye matrisiyle değiştirilecektir.
+- `EnsureMemberAsync(projectId)`: Aktif kullanıcı projenin üyesi olmalıdır (okuma, görev listeleme/detay, yorum, ek). `Admin` üyelik şartını atlar (proje varlığı yine denetlenir).
+- `EnsureCanManageAsync(projectId)`: Proje sahibi **veya** `Admin`. Proje güncelleme/silme ve üye yönetiminin yanı sıra **tam görev yönetiminin** de kapısıdır: görev oluşturma, tüm alanları düzenleme, yeniden atama ve silme.
+- `CanManageAsync(projectId)`: Yukarıdakinin fırlatmayan (bool) sürümü. Görev güncellemede aktörün "yönetici" (sahip/Admin) mi yoksa sıradan üye mi olduğunu ayırmak için kullanılır.
 
-- `EnsureMemberAsync(projectId)`: Aktif kullanıcı projenin üyesi olmalıdır (okuma, görev oluşturma/güncelleme).
-- `EnsureCanManageAsync(projectId)`: Proje sahibi veya `Admin` rolü gerekir (proje güncelleme/silme, üye ekleme/çıkarma).
-- `EnsureCanDeleteTasksAsync(projectId)`: Görev silme ek olarak rol kapısından geçer: `Admin` **veya** `ProjectManager` rolüne sahip proje sahibi. `Member` rolündeki bir kullanıcı, projenin sahibi olsa bile görev silemez; proje yönetim hakları (üye ekleme, proje güncelleme) sahiplik üzerinden devam eder.
+Görev güncelleme yetki matrisi (`TaskService.UpdateAsync`):
 
-`Admin` sistem seviyesindeki roldür ve üyelik şartını atlar. Rol yalnızca kaba kapıdır; projeye özel yetki her zaman sahiplik/üyelik verisiyle birlikte hesaplanır (`ProjectManager` rolü, sahibi olmadığı projede yetki vermez).
+- **Sahip veya Admin:** bütün alanları düzenler ve yeniden atar.
+- **Atanmış üye (sahip/Admin değil):** yalnızca kendi görevinin **durumunu** izin verilen geçişlerle değiştirebilir; başka bir alan değiştirmeye çalışması `403` döner.
+- **Diğer üye:** görev üzerinde hiçbir yazma yapamaz (`403`); okuma ve yorum açıktır.
+
+`Admin` sistem seviyesindeki roldür ve üyelik şartını atlar. Sistem `ProjectManager`
+rolü **tek başına** hiçbir proje içi yetki vermez; projeye özel yetki her zaman
+sahiplik/üyelik verisiyle hesaplanır. B10-02 ile görev silmeye özel eski
+`ProjectManager + owner` istisnası kaldırıldı; görev silme artık sahip veya Admin
+yetkisidir.
 
 ### 401 / 403 / 404 sözleşmesi
 
@@ -198,6 +204,76 @@ Servis üç seviye sunar:
 - Mükerrer üyelik hem domain kuralıyla (`DomainException` → 409) hem `(ProjectId, UserId)` unique index'iyle reddedilir. Yarış durumunda domain kontrolünü atlayan istek unique index'e takılır; global exception handler PostgreSQL `23505` unique violation taşıyan `DbUpdateException`'ı 500 yerine `409 Conflict` olarak döndürür.
 - Göreve atanan kullanıcının proje üyesi olduğu doğrulanır (400, `assigneeUserId`).
 - Proje sahibi üyelikten çıkarılamaz; açık (Todo/InProgress) görevi atanmış üye, görevler yeniden atanmadan çıkarılamaz.
+
+## Soft-delete ve alt kaynak izolasyonu (Görev 10 / B10-01)
+
+Proje silme `Project.SoftDelete()` ile yalnız `IsDeleted` bayrağını kaldırır; proje
+satırı, üyelik (`ProjectMember`) ve görev satırları fiziksel olarak durur. Bu bilinçli
+bir karardır: MVP sonrası restore/retention akışı (`B11-05`) silinen projeyi ve alt
+kaynaklarını üyelik grafiği bozulmadan geri getirebilsin diye üyelikler korunur.
+Kalıcı temizlik ayrı bir retention job'ının işidir, silme anının değil.
+
+Erişim izolasyonu tek merkezden sağlanır: `ProjectRepository.IsMemberAsync` ve
+`ExistsAsync` sorguları, `!IsDeleted` query filtresini taşıyan `Projects` DbSet'i
+üzerinden çözülür (`ProjectMembers`'a doğrudan sorgu atılmaz). Böylece proje soft-delete
+edilince:
+
+- Üye kontrolü (`EnsureMemberAsync`) her proje-kapsamlı yolda `false` döner → 404.
+- Admin bypass'ı (`EnsureProjectExistsAsync`) da aynı filtreli sorguyu kullandığı için
+  Admin de silinmiş projeyi normal API üzerinden açamaz → 404.
+- Görev, istatistik, yorum ve ek servislerinin tamamı bu iki kontrolden birine bağlı
+  olduğu için tek düzeltme bütün alt kaynakları kapatır.
+
+Görevlerin ayrıca kendi `!IsDeleted` query filtresi vardır (silinen görev), ama silinen
+*projenin* görevleri fiziksel olarak durduğundan asıl güvence üyelik/varlık kontrolüdür.
+
+## Optimistic concurrency sözleşmesi (Görev 10 / B10-06)
+
+`TaskResponse` opak bir `version` alanı taşır; kaynağı PostgreSQL `xmin` satır
+sürümüdür (`RowVersion.Encode`, base64url). İstemci görevi yüklerken bu değeri saklar
+ve `UpdateTaskRequest.version` ile geri gönderir.
+
+- Version gönderilirse zorlanır: repository, izlenen entity'nin `xmin` OriginalValue'sunu
+  istemcinin değerine sabitler; böylece `UPDATE ... WHERE xmin = @version` üretilir.
+  Kayıt başkası tarafından değiştirilmişse 0 satır etkilenir → `DbUpdateConcurrencyException`
+  → global handler `409 Conflict`. Güncel veri **ezilmez**.
+- Version gönderilmezse geriye dönük uyumluluk için son-yazan-kazanır davranışı korunur.
+  Web istemcisi düzenlemede her zaman version gönderir; bu yüzden pratikte zorunludur.
+- Geçersiz/çözülemeyen token 500 değil `409` (ConflictException) döner.
+
+Proje response'una version şimdilik eklenmedi: proje güncelleme yalnız sahip/Admin
+işidir ve eşzamanlı düzenleme baskısı görevlere kıyasla düşüktür; ihtiyaç doğduğunda
+aynı desen uygulanır.
+
+## Bildirim sözleşmesi (Görev 10 / B10-07)
+
+`NotificationResponse` artık `projectId` ve `taskItemId` taşır; görev rotaları proje
+kapsamlı olduğu için (`/api/projects/{projectId}/tasks/{taskItemId}`) istemci kaynağa
+bu iki alanla gider. `type` yapılandırılmış ayrımlayıcıdır (`TaskAssigned`,
+`TaskStatusChanged`, `DueDateReminder`).
+
+- **Lokalizasyon kararı:** Backend'deki `message` alanı İngilizce bir *fallback*'tir.
+  Birincil kullanıcı metni istemcide `type`'tan lokalize edilir. Tam parametreli olay
+  verisi (ör. görev başlığını Türkçe şablona gömmek) B11-06 iş birliği/aktivite
+  kapsamında genişletilir; MVP'de `type` + `message` yeterlidir.
+- **Okunmamış sayısı:** `GET /api/notifications/unread-count` sayfadan bağımsız toplam
+  döner (`UnreadCountResponse`).
+- **Toplu okundu:** `PUT /api/notifications/read-all` tek sunucu-taraflı `ExecuteUpdate`
+  ile bütün okunmamışları işaretler; idempotenttir (ikinci çağrı 0 satır etkiler).
+
+## Güvenlik tabanı (Görev 10 / B10-09)
+
+- **Login rate limit:** Genel 120/dk limitine ek olarak kimlik uçlarına (`login`,
+  `register`) IP başına `auth` politikası uygulanır (varsayılan 10/dk,
+  `RateLimiting:Auth:PermitLimit` ile yapılandırılır).
+- **Lockout:** ASP.NET Core Identity lockout açık (5 hata → 15 dk kilit).
+  `IdentityService.ValidateCredentialsAsync` başarısızlıkları sayar, başarıda sıfırlar,
+  kilitliyi parola kontrolünden önce reddeder.
+- **Production adapter doğrulaması:** `ValidateProductionReadiness` startup'ta
+  `LoggingEmailSender`/`BasicFileScanner` stub'larıyla Production'da açılmayı engeller.
+- **Redis portu:** `compose.yml` Redis host portunu yayınlamaz. API Redis'e compose
+  network uzerinden `redis:6379` ile erisir. Host'tan Redis'e baglanmak gerekirse
+  local/private compose override kullanilir ve repoya eklenmez.
 
 ## Görev durum makinesi
 

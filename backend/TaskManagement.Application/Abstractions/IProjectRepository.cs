@@ -11,6 +11,12 @@ public interface IProjectRepository
         Guid userId,
         CancellationToken cancellationToken);
 
+    // Admin management view: every active (non-soft-deleted) project, paged. Membership
+    // is irrelevant here; the caller's Admin role is the gate (B10-08).
+    Task<PagedResponse<ProjectResponse>> ListAllActiveAsync(
+        PageQuery query,
+        CancellationToken cancellationToken);
+
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
 
     Task<bool> IsMemberAsync(Guid projectId, Guid userId, CancellationToken cancellationToken);

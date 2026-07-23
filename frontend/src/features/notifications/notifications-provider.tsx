@@ -13,15 +13,16 @@ import { notificationsApi } from "@/lib/api/endpoints";
 import type { NotificationResponse } from "@/lib/api/types";
 import { useNotificationsHub, type HubStatus } from "@/lib/realtime/notifications-hub";
 import { useAuth } from "@/lib/auth/auth-context";
+import { notificationTitle } from "./notification-text";
 
 // SignalR kalıcı veri kaynağı değildir: canlı geliş yalnız toast + cache'e ekleme
 // yapar; ilk bağlantı ve reconnect sonrası liste her zaman API'den yenilenir.
 
 interface NotificationsContextValue {
   hubStatus: HubStatus;
-  /** Yüklenen sayfalardaki okunmamışlar üzerinden rozet sayısı. */
   markRead: (id: string) => Promise<void>;
-  markManyRead: (ids: string[]) => Promise<{ failed: number }>;
+  /** Sunucu taraflı: tek istekte tüm bildirimleri okundu yapar (B10-07). */
+  markAllRead: () => Promise<void>;
 }
 
 const NotificationsContext = createContext<NotificationsContextValue | null>(null);
@@ -42,8 +43,11 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     (notification: NotificationResponse) => {
       if (!seenToastIds.has(notification.id)) {
         seenToastIds.add(notification.id);
-        // Karar §2: aktör/proje dekorasyonu ve gezinme yok; yalnız mesaj.
-        toast.info("Yeni bildirim", { description: notification.message });
+        // F10-05: başlık yapılandırılmış `type`'tan Türkçeleştirilir; backend `message`
+        // ikincil ayrıntı olarak gösterilir. Karar §2 uyarınca gezinme eylemi yok.
+        toast.info(notificationTitle(notification.type), {
+          description: notification.message,
+        });
       }
       invalidate();
     },
@@ -64,22 +68,16 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     [invalidate],
   );
 
-  // Toplu endpoint yok (karar §3): yüklenmiş okunmamışlara paralel PUT.
-  const markManyRead = useCallback(
-    async (ids: string[]) => {
-      const results = await Promise.allSettled(
-        ids.map((id) => notificationsApi.markRead(id)),
-      );
-      invalidate();
-      const failed = results.filter((result) => result.status === "rejected").length;
-      return { failed };
-    },
-    [invalidate],
-  );
+  // B10-07: tek sunucu-taraflı endpoint bütün okunmamışları (yalnız yüklü sayfayı değil)
+  // okundu yapar; idempotenttir.
+  const markAllRead = useCallback(async () => {
+    await notificationsApi.markAllRead();
+    invalidate();
+  }, [invalidate]);
 
   const value = useMemo(
-    () => ({ hubStatus, markRead, markManyRead }),
-    [hubStatus, markRead, markManyRead],
+    () => ({ hubStatus, markRead, markAllRead }),
+    [hubStatus, markRead, markAllRead],
   );
 
   return (

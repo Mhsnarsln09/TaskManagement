@@ -1,4 +1,5 @@
 using TaskManagement.Application.Abstractions;
+using TaskManagement.Application.Authentication;
 using TaskManagement.Application.Authorization;
 using TaskManagement.Application.Contracts;
 using TaskManagement.Application.Errors;
@@ -28,6 +29,19 @@ public sealed class ProjectService(
     public Task<IReadOnlyCollection<ProjectResponse>> ListAsync(CancellationToken cancellationToken)
     {
         return projectRepository.ListForUserAsync(currentUser.UserId, cancellationToken);
+    }
+
+    // Admin management view of every active project (B10-08). The Admin role is the gate;
+    // it is re-checked here so the capability never rests on the controller attribute
+    // alone, consistent with the project's authorization principle.
+    public Task<PagedResponse<ProjectResponse>> ListAllAsync(PageQuery query, CancellationToken cancellationToken)
+    {
+        if (!currentUser.IsInRole(ApplicationRoles.Admin))
+        {
+            throw new ForbiddenException("Only an admin can list all projects.");
+        }
+
+        return projectRepository.ListAllActiveAsync(query, cancellationToken);
     }
 
     public async Task<ProjectResponse> GetAsync(Guid id, CancellationToken cancellationToken)

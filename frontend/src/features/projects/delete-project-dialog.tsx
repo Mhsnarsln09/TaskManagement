@@ -64,12 +64,13 @@ export function DeleteProjectDialog({
       description={
         <>
           {statistics
-            ? `${statistics.totalTasks} görev ile birlikte tüm yorumlar ve ekler kalıcı olarak silinecek. `
-            : "Tüm görevler, yorumlar ve ekler kalıcı olarak silinecek. "}
-          Bu işlem <strong>geri alınamaz</strong>.
+            ? `${statistics.totalTasks} görev ile birlikte yorumlar ve ekler erişimden kaldırılacak. `
+            : "Görevler, yorumlar ve ekler erişimden kaldırılacak. "}
+          Proje ve içeriği listelerde artık görünmez;{" "}
+          <strong>bu işlem arayüzden geri alınamaz</strong>.
         </>
       }
-      confirmLabel="Kalıcı olarak sil"
+      confirmLabel="Projeyi kaldır"
       destructive
       pending={mutation.isPending}
       confirmDisabled={nameInput !== project.name}

@@ -38,9 +38,34 @@ public sealed class IdentityService(UserManager<ApplicationUser> userManager) : 
         ApplicationUser? user = await userManager.FindByNameAsync(userNameOrEmail)
             ?? await userManager.FindByEmailAsync(userNameOrEmail);
 
-        if (user is null || !await userManager.CheckPasswordAsync(user, password))
+        if (user is null)
         {
             return null;
+        }
+
+        // A locked-out account is rejected before the password is even checked, so a
+        // guessing loop cannot keep probing once the lockout threshold is hit (B10-09).
+        if (userManager.SupportsUserLockout && await userManager.IsLockedOutAsync(user))
+        {
+            return null;
+        }
+
+        if (!await userManager.CheckPasswordAsync(user, password))
+        {
+            // Record the failure; Identity locks the account after MaxFailedAccessAttempts.
+            if (userManager.SupportsUserLockout)
+            {
+                await userManager.AccessFailedAsync(user);
+            }
+
+            return null;
+        }
+
+        // A successful login clears the failure counter so honest users are not locked
+        // out by earlier typos.
+        if (userManager.SupportsUserLockout)
+        {
+            await userManager.ResetAccessFailedCountAsync(user);
         }
 
         return await MapAsync(user);

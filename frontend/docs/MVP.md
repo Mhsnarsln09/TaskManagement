@@ -1,11 +1,14 @@
 # Frontend MVP
 
-## Durum notu — 22 Temmuz 2026
+## Durum notu — 23 Temmuz 2026
 
-Ana ekranlar ve akışlar uygulanmıştır; ancak yayınlanabilir MVP tamamlanmış değildir.
-Yorum sayfalaması, bildirim sayacı/toplu okuma, gerçek logout, silme metinleri,
-yetki görünürlüğü ve ağsız production build [Görev 10](tasks/10-mvp-hardening.md)
-tamamlanana kadar çıkış engelidir.
+[Görev 10](tasks/10-mvp-hardening.md) (F10-01…F10-09) tamamlandı: yorum sayfalaması
+(en-yeni-önce), bildirim sayacı/toplu okuma (sunucu-taraflı), gerçek logout + sekmeler
+arası refresh koordinasyonu, yetki görünürlüğü (B10-02 matrisi), silme metinleri,
+optimistic concurrency deneyimi, ağsız production build (sistem font yığını) ve CSP/güvenlik
+başlıkları uygulandı. Kalite kapıları geçer: lint, typecheck, 24 unit/component, 60 mock E2E,
+6 gerçek-backend full-stack E2E (`npm run test:e2e:fullstack`), production build. OpenAPI
+client Backend Görev 10 sözleşmesinden yeniden üretildi.
 
 ## MVP kapsamı
 

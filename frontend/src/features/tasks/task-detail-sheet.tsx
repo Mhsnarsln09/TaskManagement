@@ -28,10 +28,20 @@ import {
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { ProblemDetailsAlert } from "@/components/shared/problem-details-alert";
 import { UserDisplay } from "@/components/shared/user-display";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { STATUS_LABELS } from "@/components/shared/badges";
 import { projectsApi, tasksApi } from "@/lib/api/endpoints";
 import { problemMessage } from "@/lib/api/problem";
-import { canDeleteTasks } from "@/lib/permissions";
+import { taskPermissions } from "@/lib/permissions";
+import { allowedNextStatuses } from "@/lib/task-status";
 import { useAuth } from "@/lib/auth/auth-context";
+import type { TaskResponse } from "@/lib/api/types";
 import { formatDateOnly, formatDateTime } from "@/lib/dates";
 import { CommentsSection } from "./comments-section";
 import { AttachmentsSection } from "./attachments-section";
@@ -82,7 +92,35 @@ export function TaskDetailSheet({
 
   const task = taskQuery.data;
   const project = projectQuery.data;
-  const allowDelete = project ? canDeleteTasks(user, project) : false;
+  const perms = task && project ? taskPermissions(user, project, task) : null;
+
+  // Atanmış üye için yalnız durum değişikliği (B10-02): diğer alanlar aynen gönderilir,
+  // yeni durum ve version eklenir; backend yalnız durum değişikliğine izin verir.
+  const statusMutation = useMutation({
+    mutationFn: (status: TaskResponse["status"]) => {
+      if (!task) throw new Error("Görev yüklenmedi.");
+      return tasksApi.update(projectId, taskId, {
+        title: task.title,
+        description: task.description,
+        status,
+        priority: task.priority,
+        dueDate: task.dueDate,
+        assigneeUserId: task.assigneeUserId,
+        version: task.version,
+      });
+    },
+    onSuccess: (saved) => {
+      queryClient.setQueryData(["project", projectId, "task", taskId], saved);
+      void queryClient.invalidateQueries({ queryKey: ["project", projectId, "tasks"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["project", projectId, "statistics"],
+      });
+      toast.success("Durum güncellendi.");
+    },
+    onError: (cause) => {
+      toast.error("Durum güncellenemedi.", { description: problemMessage(cause) });
+    },
+  });
 
   return (
     <>
@@ -127,16 +165,54 @@ export function TaskDetailSheet({
                   <PriorityBadge priority={task.priority} />
                   {task.isOverdue ? <OverdueBadge /> : null}
                   <span className="flex-1" />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditOpen(true)}
-                  >
-                    <Pencil aria-hidden className="size-3.5" />
-                    Düzenle
-                  </Button>
-                  {allowDelete ? (
+
+                  {/* Atanmış üye (sahip/Admin değil): yalnız durum değiştirme. */}
+                  {perms?.canChangeStatus && !perms.canEditAllFields ? (
+                    <Select
+                      value={task.status}
+                      onValueChange={(next) =>
+                        statusMutation.mutate(next as TaskResponse["status"])
+                      }
+                      disabled={
+                        statusMutation.isPending ||
+                        allowedNextStatuses(task.status).length === 0
+                      }
+                    >
+                      <SelectTrigger className="h-8 w-40" aria-label="Durumu değiştir">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {/* Mevcut durum + izin verilen geçişler. */}
+                        <SelectItem value={task.status}>
+                          {STATUS_LABELS[task.status]}
+                        </SelectItem>
+                        {allowedNextStatuses(task.status).map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {STATUS_LABELS[status]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : null}
+
+                  {/* Sahip/Admin: tüm alanları düzenle. */}
+                  {perms?.canEditAllFields ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditOpen(true)}
+                    >
+                      <Pencil aria-hidden className="size-3.5" />
+                      Düzenle
+                    </Button>
+                  ) : null}
+
+                  {perms?.readOnly ? (
+                    <span className="text-xs text-muted-foreground">Salt okunur</span>
+                  ) : null}
+
+                  {perms?.canDelete ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -228,7 +304,7 @@ export function TaskDetailSheet({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="Görev silinsin mi?"
-        description="Görevle birlikte yorumları ve ekleri de kalıcı olarak silinir. Bu işlem geri alınamaz."
+        description="Görev, yorumları ve ekleriyle birlikte erişimden kaldırılır ve listelerde artık görünmez. Bu işlem arayüzden geri alınamaz."
         confirmLabel="Sil"
         destructive
         pending={deleteMutation.isPending}

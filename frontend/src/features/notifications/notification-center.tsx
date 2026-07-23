@@ -24,22 +24,26 @@ import { NotificationItem } from "./notification-item";
 export function NotificationCenter() {
   const [open, setOpen] = useState(false);
   const [markingAll, setMarkingAll] = useState(false);
-  const { markRead, markManyRead } = useNotifications();
+  const { markRead, markAllRead } = useNotifications();
 
   const { data, isPending } = useQuery({
     queryKey: [...NOTIFICATIONS_QUERY_KEY, "popover"],
     queryFn: ({ signal }) => notificationsApi.list(1, 10, signal),
   });
 
-  const unread = data?.items.filter((item) => !item.isRead) ?? [];
+  // Rozet, ilk 10 kayıttan değil sunucudaki gerçek toplam okunmamış sayısından beslenir.
+  const unreadCountQuery = useQuery({
+    queryKey: [...NOTIFICATIONS_QUERY_KEY, "unread-count"],
+    queryFn: ({ signal }) => notificationsApi.unreadCount(signal),
+  });
+  const unreadCount = unreadCountQuery.data?.unreadCount ?? 0;
 
   async function onMarkAll() {
     setMarkingAll(true);
     try {
-      const { failed } = await markManyRead(unread.map((item) => item.id));
-      if (failed > 0) {
-        toast.error(`${failed} bildirim okundu işaretlenemedi.`);
-      }
+      await markAllRead();
+    } catch {
+      toast.error("Bildirimler okundu işaretlenemedi.");
     } finally {
       setMarkingAll(false);
     }
@@ -53,14 +57,12 @@ export function NotificationCenter() {
           variant="ghost"
           size="icon"
           aria-label={
-            unread.length > 0
-              ? `Bildirimler, ${unread.length} yeni`
-              : "Bildirimler"
+            unreadCount > 0 ? `Bildirimler, ${unreadCount} yeni` : "Bildirimler"
           }
           className="relative"
         >
           <Bell aria-hidden className="size-4" />
-          {unread.length > 0 ? (
+          {unreadCount > 0 ? (
             <span
               aria-hidden
               className="absolute right-1.5 top-1.5 flex size-2 rounded-full bg-destructive"
@@ -72,11 +74,11 @@ export function NotificationCenter() {
         <div className="flex items-center justify-between gap-2 border-b px-3 py-2.5">
           <span className="flex items-center gap-2 text-sm font-semibold">
             Bildirimler
-            {unread.length > 0 ? (
-              <Badge className="px-1.5 py-0 text-[10px]">{unread.length} yeni</Badge>
+            {unreadCount > 0 ? (
+              <Badge className="px-1.5 py-0 text-[10px]">{unreadCount} yeni</Badge>
             ) : null}
           </span>
-          {unread.length > 0 ? (
+          {unreadCount > 0 ? (
             <Button
               type="button"
               variant="ghost"
@@ -104,6 +106,7 @@ export function NotificationCenter() {
                 key={notification.id}
                 notification={notification}
                 onMarkRead={(id) => void markRead(id)}
+                onNavigate={() => setOpen(false)}
               />
             ))
           ) : (
@@ -111,7 +114,8 @@ export function NotificationCenter() {
               <BellOff aria-hidden className="size-6 text-muted-foreground/60" />
               <p className="text-sm font-medium">Bildiriminiz yok</p>
               <p className="text-xs text-muted-foreground">
-                Görev atamaları ve yorumlar burada görünür.
+                Görev atamaları, durum değişiklikleri ve son tarih hatırlatmaları
+                burada görünür.
               </p>
             </div>
           )}

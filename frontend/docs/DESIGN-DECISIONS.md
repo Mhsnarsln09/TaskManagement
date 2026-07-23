@@ -85,21 +85,30 @@ deseninin başlıksız fallback'i).
 - Uzunluk limitleri: title ≤ 200, description ≤ 4000 (proje: name ≤ 160,
   description ≤ 2000; yorum ≤ 2000).
 
-## 7. Yetki matrisi (UI görünürlüğü)
+## 7. Yetki matrisi (UI görünürlüğü) — B10-02 / F10-03 ile güncellendi
 
-> Bu tablo mevcut implementasyonun görünürlük kurallarını kaydeder. Hedef MVP matrisi
-> [Frontend Görev 10 / F10-03](tasks/10-mvp-hardening.md) kapsamında backend B10-02
-> ile birlikte değiştirilecektir.
-
-Backend kuralları (`ProjectAuthorizationService`, `TaskService`):
+Backend kuralları (`ProjectAuthorizationService`, `TaskService`; `lib/permissions.ts`
+aynası):
 
 | Eylem | Kural |
 | --- | --- |
-| Proje görüntüleme, görev/yorum/ek CRUD-okuma | Proje üyesi veya `Admin` |
-| Görev oluşturma/düzenleme, yorum, ek | Her proje üyesi |
+| Proje görüntüleme, görev/yorum/ek okuma | Proje üyesi veya `Admin` |
+| Yorum ekleme, ek yükleme | Her proje üyesi |
+| **Görev oluşturma, tüm alanları düzenleme, yeniden atama, silme** | **Proje sahibi veya `Admin`** |
+| **Görev durumunu değiştirme** | Sahip/Admin **veya** görevin atanmış üyesi (izin verilen geçişlerle) |
+| Diğer üyenin göreve yazması | Yok (salt okunur) |
 | Proje düzenleme/silme, üye ekleme/çıkarma | Proje sahibi veya `Admin` |
-| Görev silme | `Admin` veya (sahip **ve** `ProjectManager` rolü) |
 | Kullanıcı yönetimi | Yalnız `SuperAdmin` |
+
+Sistem `ProjectManager` rolü **tek başına** proje içi yetki vermez. Eski görev-silme
+`ProjectManager + owner` istisnası B10-02 ile kaldırıldı.
+
+**UI türetimi (`taskPermissions`):**
+
+- **Sahip/Admin:** "Yeni görev", "Düzenle" (tüm alanlar), yeniden atama, "Sil".
+- **Atanmış üye:** yalnız durum seçici (izin verilen geçişler); PUT tüm alanları aynen
+  + yeni durum + `version` ile gönderir (backend `EnsureOnlyStatusChanged`).
+- **Diğer üye:** yazma kontrolü yok, "Salt okunur" rozeti; yorum/ek açık.
 
 **Karar:** UI görünürlüğü bu matristen türetilir (`ownerUserId === session.id`,
 roller auth yanıtından). Emin olunamayan uç durumlarda eylem gösterilir ve backend

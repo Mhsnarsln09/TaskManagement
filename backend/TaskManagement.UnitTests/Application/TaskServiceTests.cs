@@ -30,6 +30,12 @@ public sealed class TaskServiceTests
     {
         _currentUser.UserId.Returns(_callerId);
         GrantMembership(_callerId);
+        // By default the caller owns the project, so create/edit/delete run on the
+        // manager path (B10-02). Tests that exercise the ordinary-member path override
+        // the owner explicitly.
+        SetOwner(_callerId);
+        // The concurrency version is produced by the repository from the tracked row.
+        _taskRepository.GetVersion(Arg.Any<TaskItem>()).Returns("v1");
 
         _service = new TaskService(
             _projectRepository,
@@ -37,7 +43,8 @@ public sealed class TaskServiceTests
             new ProjectAuthorizationService(_projectRepository, _currentUser),
             new FixedTimeProvider(Now),
             _notificationService,
-            _cache);
+            _cache,
+            _currentUser);
     }
 
     [Fact]
@@ -166,6 +173,41 @@ public sealed class TaskServiceTests
     }
 
     [Fact]
+    public async Task UpdateTask_OverdueTask_CanEditOtherFieldsWhenDueDateUnchanged()
+    {
+        // Due date is a day in the past relative to the fixed clock (2026-07-20).
+        var pastDueDate = DateOnly.FromDateTime(Now.UtcDateTime).AddDays(-1);
+        SetExistingTask(OverdueTodoTask(pastDueDate));
+
+        TaskResponse response = await _service.UpdateAsync(
+            _projectId,
+            Guid.NewGuid(),
+            UpdateRequest(title: "Reworded overdue task", status: WorkItemStatus.InProgress, dueDate: pastDueDate),
+            CancellationToken.None);
+
+        Assert.Equal("Reworded overdue task", response.Title);
+        Assert.Equal(pastDueDate, response.DueDate);
+        await _taskRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UpdateTask_ChangingDueDateIntoThePast_ThrowsValidationProblem()
+    {
+        SetExistingTask(TodoTask());
+        var pastDueDate = DateOnly.FromDateTime(Now.UtcDateTime).AddDays(-2);
+
+        var exception = await Assert.ThrowsAsync<ValidationProblemException>(
+            () => _service.UpdateAsync(
+                _projectId,
+                Guid.NewGuid(),
+                UpdateRequest(dueDate: pastDueDate),
+                CancellationToken.None));
+
+        Assert.Contains("dueDate", exception.Errors.Keys);
+        await _taskRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task UpdateTask_TaskDoesNotExist_ThrowsNotFound()
     {
         await Assert.ThrowsAsync<NotFoundException>(
@@ -186,6 +228,77 @@ public sealed class TaskServiceTests
             () => _service.DeleteAsync(_projectId, Guid.NewGuid(), CancellationToken.None));
 
         _taskRepository.DidNotReceive().Remove(Arg.Any<TaskItem>());
+    }
+
+    [Fact]
+    public async Task DeleteTask_OwnerWithoutProjectManagerRole_Succeeds()
+    {
+        // B10-02 removed the ProjectManager gate: owning the project is enough.
+        SetExistingTask(TodoTask());
+
+        await _service.DeleteAsync(_projectId, Guid.NewGuid(), CancellationToken.None);
+
+        await _taskRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateTask_CallerIsMemberButNotOwner_ThrowsForbidden()
+    {
+        SetOwner(Guid.NewGuid());
+
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => _service.CreateAsync(_projectId, CreateRequest(), CancellationToken.None));
+
+        await _taskRepository.DidNotReceive().AddAsync(Arg.Any<TaskItem>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UpdateTask_AssigneeChangesOnlyStatus_Allowed()
+    {
+        // Caller is an ordinary member (not owner) but is the task's assignee.
+        SetOwner(Guid.NewGuid());
+        SetExistingTask(AssignedTodoTask(_callerId));
+
+        TaskResponse response = await _service.UpdateAsync(
+            _projectId,
+            Guid.NewGuid(),
+            UpdateRequest(status: WorkItemStatus.InProgress, assigneeUserId: _callerId),
+            CancellationToken.None);
+
+        Assert.Equal(WorkItemStatus.InProgress, response.Status);
+        await _taskRepository.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UpdateTask_AssigneeChangesOtherField_ThrowsForbidden()
+    {
+        SetOwner(Guid.NewGuid());
+        SetExistingTask(AssignedTodoTask(_callerId));
+
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => _service.UpdateAsync(
+                _projectId,
+                Guid.NewGuid(),
+                UpdateRequest(title: "Renamed by assignee", status: WorkItemStatus.InProgress, assigneeUserId: _callerId),
+                CancellationToken.None));
+
+        await _taskRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task UpdateTask_MemberIsNotAssignee_ThrowsForbidden()
+    {
+        SetOwner(Guid.NewGuid());
+        SetExistingTask(AssignedTodoTask(Guid.NewGuid()));
+
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => _service.UpdateAsync(
+                _projectId,
+                Guid.NewGuid(),
+                UpdateRequest(status: WorkItemStatus.InProgress),
+                CancellationToken.None));
+
+        await _taskRepository.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
     private TaskItem TodoTask()
@@ -220,6 +333,24 @@ public sealed class TaskServiceTests
             .Returns(true);
     }
 
+    private void SetOwner(Guid ownerId)
+    {
+        _projectRepository.GetOwnerIdAsync(_projectId, Arg.Any<CancellationToken>())
+            .Returns(ownerId);
+    }
+
+    private TaskItem AssignedTodoTask(Guid assigneeId)
+    {
+        return new TaskItem(
+            Guid.NewGuid(),
+            _projectId,
+            "Task",
+            null,
+            TaskPriority.Medium,
+            null,
+            assigneeId);
+    }
+
     private void SetExistingTask(TaskItem task)
     {
         _taskRepository.GetEntityAsync(_projectId, Arg.Any<Guid>(), Arg.Any<CancellationToken>())
@@ -235,9 +366,24 @@ public sealed class TaskServiceTests
 
     private static UpdateTaskRequest UpdateRequest(
         string title = "Task",
-        WorkItemStatus status = WorkItemStatus.InProgress)
+        WorkItemStatus status = WorkItemStatus.InProgress,
+        TaskPriority priority = TaskPriority.Medium,
+        Guid? assigneeUserId = null,
+        DateOnly? dueDate = null)
     {
-        return new UpdateTaskRequest(title, null, status, TaskPriority.Medium, null, null);
+        return new UpdateTaskRequest(title, null, status, priority, dueDate, assigneeUserId);
+    }
+
+    private TaskItem OverdueTodoTask(DateOnly dueDate)
+    {
+        return new TaskItem(
+            Guid.NewGuid(),
+            _projectId,
+            "Task",
+            null,
+            TaskPriority.Medium,
+            dueDate,
+            null);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

@@ -30,4 +30,9 @@ public sealed class AuthService(
 
     public Task<AuthResponse> RefreshAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
         => accessTokenGenerator.RotateAsync(request.RefreshToken, cancellationToken);
+
+    // Server-side logout: revokes the refresh token's whole family. Idempotent, so the
+    // client can always clear its own state regardless of the server outcome (B10-03).
+    public Task LogoutAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
+        => accessTokenGenerator.RevokeAsync(request.RefreshToken, cancellationToken);
 }

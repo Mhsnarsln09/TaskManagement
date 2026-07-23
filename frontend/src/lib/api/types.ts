@@ -31,6 +31,8 @@ export type PagedComments = Schemas["PagedResponseOfCommentResponse"];
 export type AttachmentResponse = Schemas["AttachmentResponse"];
 
 export type NotificationResponse = Schemas["NotificationResponse"];
+export type NotificationType = Schemas["NotificationType"];
+export type UnreadCountResponse = Schemas["UnreadCountResponse"];
 export type PagedNotifications = Schemas["PagedResponseOfNotificationResponse"];
 
 export type AdminUserResponse = Schemas["AdminUserResponse"];

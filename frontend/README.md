@@ -90,7 +90,21 @@ Dağıtım adımları için [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Güvenlik notu
 
-MVP'de access/refresh token'lar `localStorage`'ta tutulur; API token'ı JSON
-gövdesinde döndürür (bkz. docs/FRONTEND-INTEGRATION.md). Production için
-HttpOnly cookie/BFF yaklaşımı post-MVP hedefidir; gizli bilgiler
-`NEXT_PUBLIC_*` değişkenlerine yazılmaz.
+**Token saklama (XSS riski ve geçiş planı — F10-08):** MVP'de access/refresh token'lar
+`localStorage`'ta tutulur; API token'ı JSON gövdesinde döndürür (bkz.
+docs/FRONTEND-INTEGRATION.md). `localStorage` JavaScript'ten okunabilir olduğu için bir
+XSS açığı token'ların çalınmasına yol açabilir. Bu risk, CSP tabanı (aşağıda) ve girdi
+kaçışıyla azaltılır ama tamamen kaldırılmaz. **Geçiş planı:** production sertleştirmesinde
+refresh token'ın `HttpOnly` + `Secure` + `SameSite` cookie'ye taşınması (BFF veya backend
+cookie sözleşmesi) hedeflenir; access token kısa ömürlü bellek-içi tutulur. Bu, backend
+cookie sözleşmesi netleştiğinde yapılacak ayrı bir iştir.
+
+**CSP ve güvenlik başlıkları (F10-08):** `next.config.ts` tüm yanıtlara Content-Security-Policy,
+`X-Content-Type-Options: nosniff`, `Referrer-Policy`, `X-Frame-Options: DENY` ve
+`Permissions-Policy` ekler. `connect-src`, API origin'ini ve SignalR websocket'ini
+(`NEXT_PUBLIC_API_BASE_URL`'den türetilir) kapsar. `script-src`/`style-src` şu an
+`'unsafe-inline'` içerir (Next.js bootstrap script'i + Tailwind/shadcn inline style'ları);
+nonce + `'strict-dynamic'` tabanlı sıkı CSP (dinamik render gerektirir) post-MVP
+sertleştirme adımıdır.
+
+Gizli bilgiler `NEXT_PUBLIC_*` değişkenlerine yazılmaz.

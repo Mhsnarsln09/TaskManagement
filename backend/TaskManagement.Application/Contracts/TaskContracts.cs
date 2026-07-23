@@ -15,7 +15,12 @@ public sealed record UpdateTaskRequest(
     WorkItemStatus Status,
     TaskPriority Priority,
     DateOnly? DueDate,
-    Guid? AssigneeUserId);
+    Guid? AssigneeUserId,
+    // Opaque optimistic-concurrency token echoed back from the TaskResponse the client
+    // is editing (B10-06). When present it is enforced: a stale value is rejected with
+    // 409 instead of silently overwriting a newer version. Managing clients (the web
+    // app) always send it; it is optional only for backward compatibility.
+    string? Version = null);
 
 public sealed record TaskListQuery(
     int Page = 1,
@@ -36,10 +41,14 @@ public sealed record TaskResponse(
     Guid? AssigneeUserId,
     bool IsOverdue,
     DateTimeOffset CreatedAtUtc,
-    DateTimeOffset? UpdatedAtUtc);
+    DateTimeOffset? UpdatedAtUtc,
+    // Opaque optimistic-concurrency token (B10-06). The client stores it when it loads
+    // a task and echoes it back in UpdateTaskRequest.Version so a stale edit is rejected.
+    string Version);
 
 public sealed record DueTaskReminderCandidate(
     Guid TaskItemId,
+    Guid ProjectId,
     Guid AssigneeUserId,
     string Title,
     DateOnly DueDate);

@@ -37,10 +37,12 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
 
         tasks = ApplySorting(tasks, query.SortBy, query.SortDirection);
 
-        List<TaskResponse> items = await tasks
+        // The version token is the row's xmin. It is read as a uint in SQL and formatted
+        // client-side, because a string conversion cannot be translated to SQL.
+        var rows = await tasks
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
-            .Select(task => new TaskResponse(
+            .Select(task => new TaskProjection(
                 task.Id,
                 task.ProjectId,
                 task.Title,
@@ -54,9 +56,11 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
                     && task.Status != WorkItemStatus.Completed
                     && task.Status != WorkItemStatus.Cancelled,
                 task.CreatedAtUtc,
-                task.UpdatedAtUtc))
+                task.UpdatedAtUtc,
+                EF.Property<uint>(task, "xmin")))
             .ToListAsync(cancellationToken);
 
+        List<TaskResponse> items = rows.Select(ToResponse).ToList();
         return new PagedResponse<TaskResponse>(items, query.Page, query.PageSize, totalCount);
     }
 
@@ -66,10 +70,10 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
         DateOnly today,
         CancellationToken cancellationToken)
     {
-        return await dbContext.TaskItems
+        TaskProjection? row = await dbContext.TaskItems
             .AsNoTracking()
             .Where(task => task.ProjectId == projectId && task.Id == taskId)
-            .Select(task => new TaskResponse(
+            .Select(task => new TaskProjection(
                 task.Id,
                 task.ProjectId,
                 task.Title,
@@ -83,9 +87,40 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
                     && task.Status != WorkItemStatus.Completed
                     && task.Status != WorkItemStatus.Cancelled,
                 task.CreatedAtUtc,
-                task.UpdatedAtUtc))
+                task.UpdatedAtUtc,
+                EF.Property<uint>(task, "xmin")))
             .SingleOrDefaultAsync(cancellationToken);
+
+        return row is null ? null : ToResponse(row);
     }
+
+    private static TaskResponse ToResponse(TaskProjection row) => new(
+        row.Id,
+        row.ProjectId,
+        row.Title,
+        row.Description,
+        row.Status,
+        row.Priority,
+        row.DueDate,
+        row.AssigneeUserId,
+        row.IsOverdue,
+        row.CreatedAtUtc,
+        row.UpdatedAtUtc,
+        RowVersion.Encode(row.Xmin));
+
+    private sealed record TaskProjection(
+        Guid Id,
+        Guid ProjectId,
+        string Title,
+        string? Description,
+        WorkItemStatus Status,
+        TaskPriority Priority,
+        DateOnly? DueDate,
+        Guid? AssigneeUserId,
+        bool IsOverdue,
+        DateTimeOffset CreatedAtUtc,
+        DateTimeOffset? UpdatedAtUtc,
+        uint Xmin);
 
     public Task<bool> ExistsAsync(Guid projectId, Guid taskId, CancellationToken cancellationToken)
     {
@@ -148,6 +183,7 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
                 && task.Status != WorkItemStatus.Cancelled)
             .Select(task => new DueTaskReminderCandidate(
                 task.Id,
+                task.ProjectId,
                 task.AssigneeUserId!.Value,
                 task.Title,
                 task.DueDate!.Value))
@@ -161,6 +197,19 @@ public sealed class TaskRepository(ApplicationDbContext dbContext) : ITaskReposi
     {
         return await dbContext.TaskItems
             .SingleOrDefaultAsync(task => task.ProjectId == projectId && task.Id == taskId, cancellationToken);
+    }
+
+    public void SetExpectedVersion(TaskItem task, string version)
+    {
+        // Overriding the tracked original xmin makes EF emit `WHERE ... AND xmin = @v`,
+        // so a row changed by another client since the token was issued affects zero
+        // rows and raises DbUpdateConcurrencyException (mapped to 409).
+        dbContext.Entry(task).Property("xmin").OriginalValue = RowVersion.Decode(version);
+    }
+
+    public string GetVersion(TaskItem task)
+    {
+        return RowVersion.Encode((uint)dbContext.Entry(task).Property("xmin").CurrentValue!);
     }
 
     public void Remove(TaskItem task)

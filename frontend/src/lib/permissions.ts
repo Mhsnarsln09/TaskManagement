@@ -1,6 +1,12 @@
-import type { ProjectResponse, UserResponse } from "@/lib/api/types";
+import type {
+  ProjectResponse,
+  TaskResponse,
+  UserResponse,
+} from "@/lib/api/types";
 
-// Yetki matrisi DESIGN-DECISIONS.md §7'nin aynasıdır; nihai karar backend'dedir.
+// Yetki matrisi backend B10-02'nin (ProjectAuthorizationService + TaskService)
+// aynasıdır; nihai karar her zaman backend'dedir. UI yalnızca görünürlüğü buradan
+// türetir, kritik kontrolü değil.
 
 export function isProjectOwner(
   user: UserResponse | null,
@@ -18,12 +24,49 @@ export function canManageProject(
   return user.roles.includes("Admin") || user.id === project.ownerUserId;
 }
 
-/** Görev silme: Admin veya (sahip VE ProjectManager rolü). */
-export function canDeleteTasks(
+/**
+ * Tam görev yönetimi (oluşturma, tüm alanları düzenleme, yeniden atama, silme):
+ * proje sahibi veya Admin (B10-02). Sistem `ProjectManager` rolü tek başına yetki
+ * vermez.
+ */
+export function canManageTasks(
   user: UserResponse | null,
   project: Pick<ProjectResponse, "ownerUserId">,
 ): boolean {
-  if (!user) return false;
-  if (user.roles.includes("Admin")) return true;
-  return user.id === project.ownerUserId && user.roles.includes("ProjectManager");
+  return canManageProject(user, project);
+}
+
+export function isTaskAssignee(
+  user: UserResponse | null,
+  task: Pick<TaskResponse, "assigneeUserId">,
+): boolean {
+  return user !== null && task.assigneeUserId !== null && task.assigneeUserId === user.id;
+}
+
+export interface TaskPermissions {
+  /** Sahip/Admin: tüm alanları düzenler, yeniden atar, siler. */
+  canManage: boolean;
+  /** Sahip/Admin tüm alanları; başka kimse edit formunu göremez. */
+  canEditAllFields: boolean;
+  /** Sahip/Admin veya atanmış üye: durum değiştirebilir. */
+  canChangeStatus: boolean;
+  canDelete: boolean;
+  /** Yazma yetkisi olmayan üye: yalnız okuma (+ yorum). */
+  readOnly: boolean;
+}
+
+export function taskPermissions(
+  user: UserResponse | null,
+  project: Pick<ProjectResponse, "ownerUserId">,
+  task: Pick<TaskResponse, "assigneeUserId">,
+): TaskPermissions {
+  const manage = canManageTasks(user, project);
+  const assignee = !manage && isTaskAssignee(user, task);
+  return {
+    canManage: manage,
+    canEditAllFields: manage,
+    canChangeStatus: manage || assignee,
+    canDelete: manage,
+    readOnly: !manage && !assignee,
+  };
 }

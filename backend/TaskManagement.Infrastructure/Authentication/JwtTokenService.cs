@@ -71,6 +71,38 @@ public sealed class JwtTokenService(
         return response;
     }
 
+    public async Task RevokeAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        string hash = Hash(refreshToken);
+
+        RefreshToken? current = await dbContext.RefreshTokens
+            .SingleOrDefaultAsync(token => token.TokenHash == hash, cancellationToken);
+
+        // Idempotent logout: an unknown or already-fully-revoked family is a no-op
+        // success so repeated logouts and stale tokens never surface an error.
+        if (current is null)
+        {
+            return;
+        }
+
+        List<RefreshToken> family = await dbContext.RefreshTokens
+            .Where(token => token.FamilyId == current.FamilyId && token.RevokedAtUtc == null)
+            .ToListAsync(cancellationToken);
+
+        if (family.Count == 0)
+        {
+            return;
+        }
+
+        family.ForEach(token => token.Revoke(now));
+
+        // SaveChanges records "Modified RefreshToken {id}" audit entries via the
+        // DbContext audit trail. The token value is never written — only the entity id,
+        // acting user and correlation id — which is the logout/revoke audit event.
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task<AuthResponse> CreateSessionAsync(
         UserResponse user,
         Guid familyId,

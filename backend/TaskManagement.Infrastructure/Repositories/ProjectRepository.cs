@@ -32,8 +32,38 @@ public sealed class ProjectRepository(ApplicationDbContext dbContext) : IProject
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<PagedResponse<ProjectResponse>> ListAllActiveAsync(
+        PageQuery query,
+        CancellationToken cancellationToken)
+    {
+        // The Projects set carries the `!IsDeleted` filter, so soft-deleted projects are
+        // excluded from the admin listing by default (B10-08).
+        IQueryable<Project> projects = dbContext.Projects.AsNoTracking();
+
+        int totalCount = await projects.CountAsync(cancellationToken);
+
+        List<ProjectResponse> items = await projects
+            .OrderBy(project => project.Name)
+            .ThenBy(project => project.Id)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(project => new ProjectResponse(
+                project.Id,
+                project.Name,
+                project.Description,
+                project.OwnerUserId,
+                project.CreatedAtUtc,
+                project.UpdatedAtUtc))
+            .ToListAsync(cancellationToken);
+
+        return new PagedResponse<ProjectResponse>(items, query.Page, query.PageSize, totalCount);
+    }
+
     public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
     {
+        // Uses the Projects set so the `!IsDeleted` query filter applies. This is the
+        // Admin bypass path (ProjectAuthorizationService.EnsureProjectExistsAsync), so
+        // a soft-deleted project also 404s for Admins, not just for members (B10-01).
         return dbContext.Projects
             .AsNoTracking()
             .AnyAsync(project => project.Id == id, cancellationToken);
@@ -41,11 +71,16 @@ public sealed class ProjectRepository(ApplicationDbContext dbContext) : IProject
 
     public Task<bool> IsMemberAsync(Guid projectId, Guid userId, CancellationToken cancellationToken)
     {
-        return dbContext.ProjectMembers
+        // Membership is resolved through the Projects set (which carries the
+        // `!IsDeleted` query filter) rather than querying ProjectMembers directly.
+        // A soft-deleted project therefore never matches, so every membership-gated
+        // path (task/comment/attachment/statistics access, assignee validation)
+        // stops resolving its sub-resources once the project is deleted. See
+        // docs/tasks/10-mvp-hardening.md B10-01.
+        return dbContext.Projects
             .AsNoTracking()
-            .AnyAsync(
-                member => member.ProjectId == projectId && member.UserId == userId,
-                cancellationToken);
+            .Where(project => project.Id == projectId)
+            .AnyAsync(project => project.Members.Any(member => member.UserId == userId), cancellationToken);
     }
 
     public async Task<ProjectResponse?> GetResponseAsync(Guid id, CancellationToken cancellationToken)

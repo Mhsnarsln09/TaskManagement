@@ -28,6 +28,11 @@ public sealed class TaskCommentsController(CommentService commentService) : Cont
     }
 
     [HttpGet]
+    [EndpointSummary("List task comments, newest first")]
+    [EndpointDescription(
+        "Returns comments ordered newest first (descending CreatedAtUtc, then Id). " +
+        "Page 1 carries the most recent comments; higher pages return progressively " +
+        "older comments. The ordering is stable across pages even for comments sharing a timestamp.")]
     [ProducesResponseType<PagedResponse<CommentResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]

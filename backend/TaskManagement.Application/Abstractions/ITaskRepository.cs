@@ -44,6 +44,16 @@ public interface ITaskRepository
         Guid taskId,
         CancellationToken cancellationToken);
 
+    // Optimistic concurrency (B10-06): pins the expected row version so the UPDATE only
+    // succeeds when the row still matches the version the client last read. A stale
+    // version yields a DbUpdateConcurrencyException, mapped to 409. An unparseable token
+    // is treated as a conflict rather than a server error.
+    void SetExpectedVersion(TaskItem task, string version);
+
+    // Current optimistic-concurrency token of a tracked task. After SaveChanges the
+    // provider has read back the new row version, so this reflects the persisted value.
+    string GetVersion(TaskItem task);
+
     void Remove(TaskItem task);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);

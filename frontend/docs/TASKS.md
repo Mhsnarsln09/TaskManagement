@@ -83,5 +83,5 @@
 
 ## Devam eden işler
 
-- [ ] [10 — MVP sertleştirme ve sözleşme düzeltmeleri](tasks/10-mvp-hardening.md)
+- [x] [10 — MVP sertleştirme ve sözleşme düzeltmeleri](tasks/10-mvp-hardening.md)
 - [ ] [11 — MVP sonrası ürün evrimi](tasks/11-product-evolution.md)

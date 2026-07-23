@@ -248,6 +248,9 @@ namespace TaskManagement.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset?>("ReadAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -269,6 +272,8 @@ namespace TaskManagement.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("IdempotencyKey")
                         .IsUnique();
+
+                    b.HasIndex("ProjectId");
 
                     b.HasIndex("TaskItemId");
 

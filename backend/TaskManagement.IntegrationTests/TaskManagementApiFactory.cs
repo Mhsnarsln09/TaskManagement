@@ -61,6 +61,10 @@ public sealed class TaskManagementApiFactory : WebApplicationFactory<Program>, I
         builder.UseSetting("FileStorage:Local:RootPath", StorageRootPath);
         builder.UseSetting("BackgroundJobs:Enabled", "false");
         builder.UseSetting("Database:MigrateOnStartup", "false");
+        // All auth calls in a test class share one IP partition ("anonymous" under
+        // TestServer); relax the stricter login limiter so registration-heavy suites do
+        // not 429. A dedicated test exercises the limit with its own low override.
+        builder.UseSetting("RateLimiting:Auth:PermitLimit", "100000");
         builder.UseSetting("BootstrapAdmin:Enabled", "true");
         builder.UseSetting("BootstrapAdmin:Email", "superadmin@test.local");
         builder.UseSetting("BootstrapAdmin:UserName", "superadmin");

@@ -1,8 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// E2E testleri API'yi route mock'larıyla taklit eder (e2e/fixtures/api-mock.ts):
-// böylece CI'da backend, Postgres ve Redis çalıştırmadan kritik akışlar korunur.
-// Sözleşme uyumu ayrıca backend integration testleri ve üretilen tiplerle sağlanır.
+// Bu suite hızlı bir UI davranış testidir, SÖZLEŞME KANITI DEĞİLDİR (F10-09): API'yi
+// route mock'larıyla taklit eder (e2e/fixtures/api-mock.ts), böylece CI'da backend,
+// Postgres ve Redis çalıştırmadan UI akışları (loading/empty/error/permission, refresh
+// koordinasyonu, rota koruması) hızlıca korunur. Gerçek backend sözleşme kanıtı ayrı
+// bir suite'tedir: `npm run test:e2e:fullstack` (playwright.fullstack.config.ts) +
+// backend integration testleri + üretilen OpenAPI tipleri.
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,

@@ -21,7 +21,7 @@ public sealed class NotificationRepository(ApplicationDbContext dbContext) : INo
         List<NotificationResponse> items = await source
             .OrderByDescending(x => x.CreatedAtUtc).ThenBy(x => x.Id)
             .Skip((query.Page - 1) * query.PageSize).Take(query.PageSize)
-            .Select(x => new NotificationResponse(x.Id, x.TaskItemId, x.Type, x.Message,
+            .Select(x => new NotificationResponse(x.Id, x.ProjectId, x.TaskItemId, x.Type, x.Message,
                 x.ReadAtUtc != null, x.CreatedAtUtc, x.ReadAtUtc))
             .ToListAsync(cancellationToken);
         return new PagedResponse<NotificationResponse>(items, query.Page, query.PageSize, total);
@@ -29,6 +29,21 @@ public sealed class NotificationRepository(ApplicationDbContext dbContext) : INo
 
     public Task<Notification?> GetAsync(Guid id, Guid userId, CancellationToken cancellationToken)
         => dbContext.Notifications.SingleOrDefaultAsync(x => x.Id == id && x.UserId == userId, cancellationToken);
+
+    public Task<int> GetUnreadCountAsync(Guid userId, CancellationToken cancellationToken)
+        => dbContext.Notifications.AsNoTracking()
+            .CountAsync(x => x.UserId == userId && x.ReadAtUtc == null, cancellationToken);
+
+    public Task<int> MarkAllAsReadAsync(Guid userId, DateTimeOffset now, CancellationToken cancellationToken)
+        // One set-based UPDATE instead of loading every unread row; only rows that are
+        // still unread are touched, so a repeated call is a no-op (idempotent).
+        => dbContext.Notifications
+            .Where(x => x.UserId == userId && x.ReadAtUtc == null)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(x => x.ReadAtUtc, now)
+                    .SetProperty(x => x.UpdatedAtUtc, now),
+                cancellationToken);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken) => dbContext.SaveChangesAsync(cancellationToken);
 }

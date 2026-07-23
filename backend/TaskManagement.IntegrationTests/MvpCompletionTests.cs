@@ -34,7 +34,7 @@ public sealed class MvpCompletionTests(TaskManagementApiFactory factory)
     }
 
     [Fact]
-    public async Task ListComments_ReturnsOldestFirstAndIsPaged()
+    public async Task ListComments_ReturnsNewestFirstAndIsPaged()
     {
         (HttpClient owner, _, _) = await RegisterUserAsync();
         Guid projectId = await CreateProjectAsync(owner);
@@ -44,18 +44,69 @@ public sealed class MvpCompletionTests(TaskManagementApiFactory factory)
         await AddCommentAsync(owner, projectId, taskId, "second");
         await AddCommentAsync(owner, projectId, taskId, "third");
 
-        HttpResponseMessage response = await owner.GetAsync($"{CommentsUrl(projectId, taskId)}?page=1&pageSize=2");
+        // Page 1 carries the newest comments (B10-04).
+        HttpResponseMessage page1 = await owner.GetAsync($"{CommentsUrl(projectId, taskId)}?page=1&pageSize=2");
+        Assert.Equal(HttpStatusCode.OK, page1.StatusCode);
+        using JsonDocument first = JsonDocument.Parse(await page1.Content.ReadAsStringAsync());
+        Assert.Equal(3, first.RootElement.GetProperty("totalCount").GetInt32());
+        Assert.Equal(["third", "second"], Contents(first));
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        using JsonDocument payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        Assert.Equal(3, payload.RootElement.GetProperty("totalCount").GetInt32());
+        // Page 2 returns progressively older comments, with no overlap or gap.
+        HttpResponseMessage page2 = await owner.GetAsync($"{CommentsUrl(projectId, taskId)}?page=2&pageSize=2");
+        using JsonDocument second = JsonDocument.Parse(await page2.Content.ReadAsStringAsync());
+        Assert.Equal(["first"], Contents(second));
+    }
 
-        string[] contents = payload.RootElement.GetProperty("items")
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(20)]
+    [InlineData(21)]
+    public async Task ListComments_NewestFirstOrderingIsStable_AcrossCommentCounts(int commentCount)
+    {
+        (HttpClient owner, _, _) = await RegisterUserAsync();
+        Guid projectId = await CreateProjectAsync(owner);
+        Guid taskId = await CreateTaskAsync(owner, projectId);
+
+        for (int index = 0; index < commentCount; index++)
+        {
+            await AddCommentAsync(owner, projectId, taskId, $"comment-{index:D3}");
+        }
+
+        // Walk every page of size 20 and stitch the items back together.
+        var seen = new List<string>();
+        int page = 1;
+        while (true)
+        {
+            HttpResponseMessage response = await owner.GetAsync(
+                $"{CommentsUrl(projectId, taskId)}?page={page}&pageSize=20");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            using JsonDocument payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Equal(commentCount, payload.RootElement.GetProperty("totalCount").GetInt32());
+            string[] contents = Contents(payload);
+            if (contents.Length == 0)
+            {
+                break;
+            }
+
+            seen.AddRange(contents);
+            page++;
+        }
+
+        // Every comment appears exactly once, in strict newest-first order and with no
+        // duplicates across page boundaries.
+        string[] expected = Enumerable.Range(0, commentCount)
+            .Select(index => $"comment-{index:D3}")
+            .Reverse()
+            .ToArray();
+        Assert.Equal(expected, seen);
+    }
+
+    private static string[] Contents(JsonDocument payload) =>
+        payload.RootElement.GetProperty("items")
             .EnumerateArray()
             .Select(item => item.GetProperty("content").GetString()!)
             .ToArray();
-        Assert.Equal(["first", "second"], contents);
-    }
 
     [Fact]
     public async Task ListComments_AsNonMember_ReturnsNotFound()

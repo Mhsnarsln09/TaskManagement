@@ -75,8 +75,10 @@ services:
     container_name: taskmanagement-redis
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+    # The Redis host port is intentionally NOT published by default (B10-09): the API
+    # reaches it over the compose network as redis:6379, so exposing it to the host only
+    # widens the attack surface. If host access is needed for local debugging, create a
+    # private compose override and do not commit it.
     volumes:
       - taskmanagement-redis-data:/data
     healthcheck:

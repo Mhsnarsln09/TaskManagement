@@ -204,8 +204,8 @@ export function ProjectSettings({ projectId }: { projectId: string }) {
       <section className="rounded-lg border border-destructive/30 bg-destructive/5 p-5">
         <h2 className="text-sm font-semibold text-destructive">Tehlike bölgesi</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Projeyi silmek tüm görevleri, yorumları ve ekleri kalıcı olarak
-          kaldırır. Bu işlem geri alınamaz.
+          Projeyi kaldırmak; görevlerini, yorumlarını ve eklerini erişimden çıkarır
+          ve listelerde görünmez yapar. Bu işlem arayüzden geri alınamaz.
         </p>
         <Button
           type="button"

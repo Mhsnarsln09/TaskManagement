@@ -44,9 +44,10 @@ public sealed class UpdateTaskRequestValidator : AbstractValidator<UpdateTaskReq
         RuleFor(request => request.Priority)
             .IsInEnum();
 
-        RuleFor(request => request.DueDate)
-            .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow.Date))
-            .When(request => request.DueDate is not null);
+        // The past-due-date rule is intentionally NOT enforced here (B10-05): a
+        // stateless validator cannot tell whether the due date is actually changing,
+        // so it would wrongly block editing the other fields of an already-overdue
+        // task. TaskService.UpdateAsync rejects a past due date only when it changes.
 
         RuleFor(request => request.AssigneeUserId)
             .NotEqual(Guid.Empty)

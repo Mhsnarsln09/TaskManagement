@@ -141,7 +141,8 @@ test.describe("Görev formu", () => {
     await expect(
       page.getByText("Bu görev siz düzenlerken başkası tarafından güncellendi."),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Son sürümü yükle" })).toBeVisible();
+    // F10-06: girdiyi kaybetmeden güncel temele geçiş eylemi.
+    await expect(page.getByRole("button", { name: "Güncel sürüme geç" })).toBeVisible();
   });
 });
 
@@ -168,8 +169,10 @@ test.describe("Görev detayı", () => {
     await expect(page.getByPlaceholder("Yorum yazın…")).toHaveValue("");
   });
 
-  test("görev silme yetkisi olmayan üyeye gösterilmez", async ({ page }) => {
-    // Oturum kullanıcısı ProjectManager ve proje sahibi → silme görünür.
+  test("proje sahibine görev eylemleri (düzenle/sil) menüsü gösterilir", async ({ page }) => {
+    // B10-02 matrisi: tam görev yönetimi (düzenle/yeniden ata/sil) proje sahibi veya
+    // Admin'e aittir; sistem ProjectManager rolü tek başına yetki vermez. Oturum
+    // kullanıcısı (ayse) PROJECT'in sahibidir, bu yüzden eylem menüsünü görür.
     await page.goto(`${TASKS_URL}?task=11111111-0000-4c3f-9a2b-000000000001`);
     await expect(page.getByRole("button", { name: "Diğer eylemler" })).toBeVisible();
   });

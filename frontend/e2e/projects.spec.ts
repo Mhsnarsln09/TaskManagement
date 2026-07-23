@@ -175,7 +175,8 @@ test.describe("Proje ayarları", () => {
 
     await page.getByRole("button", { name: "Projeyi sil" }).click();
 
-    const confirm = page.getByRole("button", { name: "Kalıcı olarak sil" });
+    // F10-04: "kalıcı silme" dili kaldırıldı; onay düğmesi "Projeyi kaldır".
+    const confirm = page.getByRole("button", { name: "Projeyi kaldır" });
     await expect(confirm).toBeDisabled();
 
     await page.getByLabel("Onaylamak için proje adını yazın").fill("Web Sitesi");

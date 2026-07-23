@@ -104,6 +104,7 @@ function task(overrides: Partial<TaskResponse> = {}): TaskResponse {
     isOverdue: true,
     createdAtUtc: "2026-07-02T11:12:00+00:00",
     updatedAtUtc: "2026-07-19T16:05:00+00:00",
+    version: "AAAAAA",
     ...overrides,
   };
 }
@@ -161,6 +162,7 @@ export function paged<T>(items: T[], page = 1, pageSize = 10, totalCount = items
 export const NOTIFICATIONS = [
   {
     id: "aaaa1111-0000-4c3f-9a2b-000000000001",
+    projectId: PROJECT_ID,
     taskItemId: TASKS[0].id,
     type: "TaskAssigned",
     message: 'Size "Ödeme sayfası hata düzeltmesi" görevi atandı.',
@@ -170,9 +172,10 @@ export const NOTIFICATIONS = [
   },
   {
     id: "aaaa1111-0000-4c3f-9a2b-000000000002",
+    projectId: PROJECT_ID,
     taskItemId: TASKS[3].id,
-    type: "TaskCompleted",
-    message: '"Footer bağlantılarını düzelt" görevi tamamlandı.',
+    type: "TaskStatusChanged",
+    message: '"Footer bağlantılarını düzelt" görevi Tamamlandı durumuna geçti.',
     isRead: true,
     createdAtUtc: new Date(Date.now() - 26 * 3_600_000).toISOString(),
     readAtUtc: new Date(Date.now() - 20 * 3_600_000).toISOString(),
